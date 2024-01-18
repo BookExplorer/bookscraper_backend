@@ -433,7 +433,7 @@ validators = "^0.22.0"
 type = "git"
 url = "https://github.com/tamireinhorn/Goodreads-Scraper.git"
 reference = "HEAD"
-resolved_reference = "8c8249878078b47bc7cf5c9033fc66b526ef6755"
+resolved_reference = "9fd632ee4a8d3c29d88d69f42459c870f792c4d5"
 
 [[package]]
 name = "h11"
