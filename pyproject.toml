@@ -12,6 +12,7 @@ goodreads-scraper = {git = "https://github.com/tamireinhorn/Goodreads-Scraper.gi
 plotly-geo = "^1.0.0"
 plotly = "^5.18.0"
 pandas = "^2.2.0"
+pycountry = "^23.12.11"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
