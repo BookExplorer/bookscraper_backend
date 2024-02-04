@@ -32,18 +32,35 @@ fig = go.Figure(
         locations=complete_data["country"],
         z=complete_data["count"],
         locationmode="country names",
-        colorscale="Blues",
+        colorscale="oranges",
         marker_line_color="black",  # Lines between countries
         marker_line_width=0.5,
         colorbar_title="Number of Authors",
     )
 )
-
+fig.update_geos(
+    projection_type="orthographic",
+    showcountries=True,  # show country boundaries
+)
 # Update the layout to add the title and adjust geo settings
 fig.update_layout(
     title_text="Number of Authors by Country",
-    geo=dict(showframe=False, showcoastlines=False, projection_type="equirectangular"),
+    coloraxis_colorbar=dict(
+        title="Number of Authors",
+        tickvals=[
+            0,
+            complete_data["count"].max(),
+        ],  # ensures that 0 is labeled on the colorbar
+        ticktext=["0", "Max"],
+    ),
+    geo=dict(
+        showframe=False,
+        showcoastlines=False,
+        projection_type="equirectangular",
+        landcolor="rgba(217, 217, 217, 1)",  # Light grey land color
+        lakecolor="rgba(127,205,255,1)",  # Light blue lake color
+        oceancolor="rgba(127,205,255,0.5)",  # Slightly transparent ocean color
+    ),
 )
 
-# Show the figure
 fig.show()
