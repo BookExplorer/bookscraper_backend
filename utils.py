@@ -3,11 +3,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
+from goodreads_scraper.utils import setup_browser
 import re
 
 
 def scrape_gr_author(url: str):
-    browser = webdriver.Chrome()
+    browser = setup_browser()
 
     browser.get(url)
 
