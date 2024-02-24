@@ -30,3 +30,11 @@ def scrape_gr_author(url: str):
     except TimeoutException:
         birthplace = None
     return birthplace
+
+
+def cleanup_birthplace(birthplace: str):
+    if birthplace:
+        raw_country = birthplace.split(",")[-1].lstrip()
+        if raw_country.startswith("The "):
+            return raw_country[4:]
+        return raw_country

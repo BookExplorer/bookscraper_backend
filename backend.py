@@ -1,7 +1,7 @@
 from goodreads_scraper.scrape import process_profile
 from typing import Dict, List
 from collections import Counter
-from utils import scrape_gr_author
+from utils import scrape_gr_author, cleanup_birthplace
 
 
 def extract_authors(books: List[Dict[str, str]]) -> Counter:
@@ -17,8 +17,11 @@ if __name__ == "__main__":
     author_info_dict = {}
     for (author_id, author_link), count in cont.items():
         birthplace = scrape_gr_author(author_link)  # Scrape the birthplace
-        author_info_dict[(author_id, author_link)] = {
+        country = cleanup_birthplace(birthplace)
+        author_info_dict[author_id] = {
+            "link": author_link,
             "count": count,
             "birthplace": birthplace,
+            "country": country,
         }
-    print(2)
+        print(2)
