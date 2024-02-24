@@ -13,6 +13,7 @@ plotly-geo = "^1.0.0"
 plotly = "^5.18.0"
 pandas = "^2.2.0"
 pycountry = "^23.12.11"
+geopy = "^2.4.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
