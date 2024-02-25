@@ -2,6 +2,7 @@ from goodreads_scraper.scrape import process_profile
 from typing import Dict, List
 from collections import Counter
 from utils import scrape_gr_author, cleanup_birthplace
+from graphs import generate_graph
 import pandas as pd
 
 
@@ -35,5 +36,5 @@ if __name__ == "__main__":
     books = process_profile(user_profile)
     cont = extract_authors(books)
     cc = generate_country_count(cont)
-    df = pd.DataFrame(list(cc.items()), columns=["Country", "Count"])
-    print(df)
+    df = pd.DataFrame(list(cc.items()), columns=["country", "count"])
+    generate_graph(df)
