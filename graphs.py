@@ -13,13 +13,19 @@ def generate_graph(country_counts: pd.DataFrame):
         country_counts, on="country", how="left"
     ).fillna(0)
 
+    # Custom colorscale
+    custom_colorscale = [
+        [0, "rgba(217, 217, 217, 1)"],  # grey for 0 count
+        [1.0 / complete_data["count"].max(), "#ffeda0"],  # light orange for min count
+        [1, "#ff4500"],  # dark orange for max count
+    ]
     # Create a base map to show all country borders
     fig = go.Figure(
         data=go.Choropleth(
             locations=complete_data["country"],
             z=complete_data["count"],
             locationmode="country names",
-            colorscale="oranges",
+            colorscale=custom_colorscale,
             marker_line_color="black",  # Lines between countries
             marker_line_width=0.5,
             colorbar_title="Number of Authors",
@@ -51,3 +57,23 @@ def generate_graph(country_counts: pd.DataFrame):
     )
 
     fig.show()
+
+
+if __name__ == "__main__":
+    # Sample data
+    country_counts = pd.DataFrame(
+        {
+            "country": [
+                "United States",
+                "United Kingdom",
+                "France",
+                "Germany",
+                "Canada",
+                "Australia",
+                "Brazil",
+            ],
+            "count": [20, 15, 10, 8, 5, 3, 2],
+        }
+    )
+
+    generate_graph(country_counts)
