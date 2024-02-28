@@ -12,6 +12,7 @@ class Author(Base):
     name = Column(String)
     birth_place = Column(String)
     birth_country = Column(String)
+    gr_link = Column(String, nullable=False)
 
 
 # Define your SQLALCHEMY_DATABASE_URI (the same one used in alembic.ini)
