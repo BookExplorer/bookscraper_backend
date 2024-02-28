@@ -18,9 +18,9 @@ class Author(Base):
 SQLALCHEMY_DATABASE_URI = (
     "postgresql://myuser:mysecretpassword@localhost:5432/bookmap_db"
 )
+if __name__ == "__main__":
+    engine = create_engine(SQLALCHEMY_DATABASE_URI)
+    Session = sessionmaker(bind=engine)
 
-engine = create_engine(SQLALCHEMY_DATABASE_URI)
-Session = sessionmaker(bind=engine)
-
-# Create the table in the database
-Base.metadata.create_all(engine)
+    # Create the table in the database
+    Base.metadata.create_all(engine)
