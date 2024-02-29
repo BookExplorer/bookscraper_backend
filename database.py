@@ -14,13 +14,8 @@ def fetch_author_by_id(session: Session, id: int):
     return session.query(Author).filter(Author.id == id).first()
 
 
-def upsert_author(session: Session, author_data: Dict) -> Author:
-    author = fetch_author_by_id(session, author_data["id"])
-    if author:
-        for key, value in author_data.items():
-            setattr(author, key, value)
-    else:
-        author = Author(**author_data)
-        session.add(Author)
+def insert_author(session: Session, author_data: Dict) -> Author:
+    author = Author(**author_data)
+    session.add(author)
     session.commit()
     return author
