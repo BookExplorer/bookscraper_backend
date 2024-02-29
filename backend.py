@@ -4,6 +4,7 @@ from collections import Counter
 from utils import scrape_gr_author, cleanup_birthplace
 from graphs import generate_graph
 import pandas as pd
+from database import upsert_author
 
 
 def extract_authors(books: List[Dict[str, str]]) -> Counter:
@@ -16,6 +17,7 @@ def generate_country_count(cont: Counter):
     author_info_dict = {}
     country_counter = {}
     for (author_id, author_link), count in cont.items():
+
         birthplace = scrape_gr_author(author_link)  # Scrape the birthplace
         country = cleanup_birthplace(birthplace)
         author_info_dict[author_id] = {
