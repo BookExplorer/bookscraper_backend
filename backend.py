@@ -8,7 +8,9 @@ from database import fetch_author_by_id, insert_author, SessionLocal
 
 
 def extract_authors(books: List[Dict[str, str]]) -> Counter:
-    author_tuples = [(book["author_id"], book["author_link"]) for book in books]
+    author_tuples = [
+        (book["author_id"], book["author_link"], book["author_name"]) for book in books
+    ]
     author_tuple_counts = Counter(author_tuples)
     return author_tuple_counts
 
@@ -17,7 +19,7 @@ def generate_country_count(cont: Counter):
     author_info_dict = {}
     country_counter = {}
     with SessionLocal() as session:
-        for (author_id, author_link), count in cont.items():
+        for (author_id, author_link, author_name), count in cont.items():
             author = fetch_author_by_id(session, author_id)
             if author:
                 country = author.birth_country
@@ -30,6 +32,7 @@ def generate_country_count(cont: Counter):
                         "birth_place": birthplace,
                         "birth_country": country,
                         "id": author_id,
+                        "name": author_name,
                         "gr_link": author_link,
                     },
                 )
