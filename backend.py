@@ -24,7 +24,16 @@ def extract_authors(books: List[Dict[str, str]]) -> Counter:
     return author_tuple_counts
 
 
-def generate_country_count(cont: Counter):
+def generate_country_count(cont: Counter) -> Dict[str, int]:
+    """From a counter of books per author, generate a similar one of country: books read from that country.
+
+
+    Args:
+        cont (Counter): Counter object with the book count per author.
+
+    Returns:
+        Dict[str, int]: Dictionary with the number of books read per country.
+    """
     country_counter = {}
     with SessionLocal() as session:
         for (author_id, author_link, author_name), count in cont.items():
