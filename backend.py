@@ -8,6 +8,15 @@ from database import fetch_author_by_id, insert_author, SessionLocal
 
 
 def extract_authors(books: List[Dict[str, str]]) -> Counter:
+    """From the books list, generate a Counter object with the number of books per author.
+    The author is identified by the tuple of his id in Goodreads, the link to his page and his name.
+
+    Args:
+        books (List[Dict[str, str]]): List of books scraped from the GR website.
+
+    Returns:
+        Counter: Counter object with the book count per author.
+    """
     author_tuples = [
         (book["author_id"], book["author_link"], book["author_name"]) for book in books
     ]
@@ -16,7 +25,6 @@ def extract_authors(books: List[Dict[str, str]]) -> Counter:
 
 
 def generate_country_count(cont: Counter):
-    author_info_dict = {}
     country_counter = {}
     with SessionLocal() as session:
         for (author_id, author_link, author_name), count in cont.items():
@@ -36,23 +44,17 @@ def generate_country_count(cont: Counter):
                         "gr_link": author_link,
                     },
                 )
-            author_info_dict[author_id] = {
-                "link": author_link,
-                "count": count,
-                "birthplace": birthplace,
-                "country": country,
-            }
             if country and country in country_counter:
-                country_counter[country] += 1
+                country_counter[country] += count
             elif country:
-                country_counter[country] = 1
+                country_counter[country] = count
     return country_counter
 
 
 if __name__ == "__main__":
     # user_profile = "https://www.goodreads.com/user/show/71341746-tamir-einhorn-salem"
     books = scrape_shelf(
-        "https://www.goodreads.com/review/list/71341746-tamir-einhorn-salem?ref=nav_mybooks&shelf=israel-2"
+        "https://www.goodreads.com/review/list/71341746-tamir-einhorn-salem?shelf=quarantine"
     )
     cont = extract_authors(books)
     cc = generate_country_count(cont)
