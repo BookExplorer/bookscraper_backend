@@ -77,3 +77,4 @@ if __name__ == "__main__":
     cont = extract_authors(books)
     cc = generate_country_count(cont)
     df = process_country_count(cc)
+    print(df)
