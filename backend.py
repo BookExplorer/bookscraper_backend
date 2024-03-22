@@ -2,8 +2,8 @@ from goodreads_scraper.scrape import process_profile, scrape_shelf
 from typing import Dict, List
 from collections import Counter
 from utils import scrape_gr_author, cleanup_birthplace
-from graphs import generate_graph
 import pandas as pd
+import pycountry
 from database import fetch_author_by_id, insert_author, SessionLocal
 
 
@@ -60,12 +60,20 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
     return country_counter
 
 
+def process_country_count(country_count: Dict[str, int]) -> pd.DataFrame:
+    initial_df = pd.DataFrame(list(country_count.items()), columns=["country", "count"])
+    country_names = {"country": [country.name for country in pycountry.countries]}
+
+    all_countries = pd.DataFrame(country_names)
+
+    complete_data = all_countries.merge(initial_df, on="country", how="left").fillna(0)
+
+    return complete_data
+
+
 if __name__ == "__main__":
-    # user_profile = "https://www.goodreads.com/user/show/71341746-tamir-einhorn-salem"
-    books = scrape_shelf(
-        "https://www.goodreads.com/review/list/71341746-tamir-einhorn-salem?shelf=quarantine"
-    )
+    user_profile = "https://www.goodreads.com/user/show/71341746-tamir-einhorn-salem"
+    books = process_profile(user_profile)
     cont = extract_authors(books)
     cc = generate_country_count(cont)
-    df = pd.DataFrame(list(cc.items()), columns=["country", "count"])
-    generate_graph(df)
+    df = process_country_count(cc)
