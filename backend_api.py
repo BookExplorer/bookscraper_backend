@@ -15,6 +15,7 @@ def profile(profile_url: str):
         books = process_profile(profile_url)
         cont = extract_authors(books)
         cc = generate_country_count(cont)
-        return {"data": cc}
+        full_count = process_country_count(cc)
+        return {"data": full_count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

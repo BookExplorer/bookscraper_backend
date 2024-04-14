@@ -60,13 +60,17 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
     return country_counter
 
 
-def process_country_count(country_count: Dict[str, int]) -> pd.DataFrame:
-    initial_df = pd.DataFrame(list(country_count.items()), columns=["country", "count"])
-    country_names = {"country": [country.name for country in pycountry.countries]}
+def process_country_count(country_count: Dict[str, int]) -> List[Dict[str, any]]:
+    # Get a list of all country names using pycountry
+    all_countries = [country.name for country in pycountry.countries]
 
-    all_countries = pd.DataFrame(country_names)
+    # Prepare a list to store the results
+    complete_data = {}
 
-    complete_data = all_countries.merge(initial_df, on="country", how="left").fillna(0)
+    # Fill in the count for each country or set it to 0 if not present
+    for country in all_countries:
+        count = country_count.get(country, 0)  # Get the count or default to 0
+        complete_data[country] = count
 
     return complete_data
 
