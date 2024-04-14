@@ -508,7 +508,7 @@ validators = "^0.22.0"
 type = "git"
 url = "https://github.com/tamireinhorn/Goodreads-Scraper.git"
 reference = "main"
-resolved_reference = "f4499d783543c1712d43b28f6bdd6a772fdf0f60"
+resolved_reference = "bdc43a9baff70c2c811102ae73abb7322bb34326"
 
 [[package]]
 name = "greenlet"
@@ -1868,6 +1868,25 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "uvicorn"
+version = "0.29.0"
+description = "The lightning-fast ASGI server."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "uvicorn-0.29.0-py3-none-any.whl", hash = "sha256:2c2aac7ff4f4365c206fd773a39bf4ebd1047c238f8b8268ad996829323473de"},
+    {file = "uvicorn-0.29.0.tar.gz", hash = "sha256:6a69214c0b6a087462412670b3ef21224fa48cae0e452b5883e8e8bdfdd11dd0"},
+]
+
+[package.dependencies]
+click = ">=7.0"
+h11 = ">=0.8"
+typing-extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
+
+[package.extras]
+standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "watchfiles (>=0.13)", "websockets (>=10.4)"]
+
+[[package]]
 name = "validators"
 version = "0.22.0"
 description = "Python Data Validation for Humans™"
@@ -1917,4 +1936,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "69750f4ac55b42229aef39680b43ceb51437c82bd19cac43b93aa58c3157ee53"
+content-hash = "33cb831ece383d07238ea033ac2cda06ec68f2154fc8b9f817d6560be8bf1db1"
