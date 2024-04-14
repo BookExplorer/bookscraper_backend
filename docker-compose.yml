@@ -1,11 +1,9 @@
-version: '3.8'
+version: "3.8"
 services:
   db:
-    image: postgres:latest
-    environment:
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_USER: myuser
-      POSTGRES_DB: bookmap_db
+    build:
+      context: ./db
+      dockerfile: dockerfile
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
