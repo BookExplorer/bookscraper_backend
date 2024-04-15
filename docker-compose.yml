@@ -9,5 +9,18 @@ services:
     ports:
       - "5432:5432"
 
+  app:
+    build:
+      context: ./db
+      dockerfile: dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://myuser:mysecretpassword@db/bookmap_db
+
 volumes:
   pgdata:

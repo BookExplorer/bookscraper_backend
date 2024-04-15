@@ -3,11 +3,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from models import Author
 from typing import Dict
+import os
 
-DATABASE_URI = "postgresql://myuser:mysecretpassword@localhost/bookmap_db"
+DATABASE_URI = os.getenv(
+    "DATABASE_URL", "postgresql://myuser:mysecretpassword@localhost/bookmap_db"
+)
+
 
 engine = create_engine(DATABASE_URI)
-SessionLocal = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(
+    bind=engine,
+)
 
 
 def fetch_author_by_id(session: Session, id: int) -> Author:
