@@ -2,8 +2,8 @@ version: "3.8"
 services:
   db:
     build:
-      context: ./docker/db
-      dockerfile: dockerfile
+      context: .
+      dockerfile: /docker/db/dockerfile
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -11,8 +11,8 @@ services:
 
   app:
     build:
-      context: ./docker/backend
-      dockerfile: dockerfile
+      context: .
+      dockerfile: /docker/backend/dockerfile
     volumes:
       - .:/app
     ports:
