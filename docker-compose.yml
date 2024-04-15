@@ -2,7 +2,7 @@ version: "3.8"
 services:
   db:
     build:
-      context: ./db
+      context: ./docker/db
       dockerfile: dockerfile
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -11,7 +11,7 @@ services:
 
   app:
     build:
-      context: ./db
+      context: ./docker/backend
       dockerfile: dockerfile
     volumes:
       - .:/app
