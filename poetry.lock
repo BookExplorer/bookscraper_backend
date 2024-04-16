@@ -342,6 +342,20 @@ files = [
 ]
 
 [[package]]
+name = "chromedriver-autoinstaller"
+version = "0.6.4"
+description = "Automatically install chromedriver that supports the currently installed version of chrome."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "chromedriver-autoinstaller-0.6.4.tar.gz", hash = "sha256:1b4df04b87e6107c730085b98e5fd541db3d1777c32b8bd08e2ca4b1244050af"},
+    {file = "chromedriver_autoinstaller-0.6.4-py3-none-any.whl", hash = "sha256:b12ed187ca9fac4d744deb588d221222ed50836384607e5303e6eab98bb9dc64"},
+]
+
+[package.dependencies]
+packaging = ">=23.1"
+
+[[package]]
 name = "click"
 version = "8.1.7"
 description = "Composable command line interface toolkit"
@@ -499,6 +513,7 @@ develop = false
 
 [package.dependencies]
 beautifulsoup4 = "^4.12.2"
+chromedriver-autoinstaller = "^0.6.4"
 ipykernel = "^6.27.1"
 requests = "^2.31.0"
 selenium = "^4.15.2"
@@ -508,7 +523,7 @@ validators = "^0.22.0"
 type = "git"
 url = "https://github.com/tamireinhorn/Goodreads-Scraper.git"
 reference = "main"
-resolved_reference = "011c90c20d819ee33bf40bcfa5f2523d47ca4eff"
+resolved_reference = "5be721cb5564bd4b12dace94c2175f0548e8dd07"
 
 [[package]]
 name = "greenlet"

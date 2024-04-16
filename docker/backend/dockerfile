@@ -19,16 +19,10 @@ RUN apt-get update && apt-get install -y wget gnupg2 \
     && apt-get update && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ChromeDriver
-RUN CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` \
-    && wget -N http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -P ~/ \
-    && unzip ~/chromedriver_linux64.zip -d ~/ \
-    && rm ~/chromedriver_linux64.zip \
-    && mv -f ~/chromedriver /usr/local/bin/chromedriver \
-    && chown root:root /usr/local/bin/chromedriver \
-    && chmod 0755 /usr/local/bin/chromedriver
 # Copy the rest of your application's code to the container
 COPY . /app
 
 # Command to run when starting the container
 CMD ["uvicorn", "backend_api:app", "--host", "0.0.0.0", "--port", "8000"]
+
+ENV CHROME_OPTS="--no-sandbox --disable-dev-shm-usage --headless --disable-gpu"
