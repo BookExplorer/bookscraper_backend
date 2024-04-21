@@ -5,14 +5,20 @@ from backend import (
     extract_authors,
     generate_country_count,
 )
+from pydantic import BaseModel, HttpUrl
+
+
+class ProfileRequest(BaseModel):
+    profile_url: str
+
 
 app = FastAPI()
 
 
 @app.post("/process-profile/")
-def profile(profile_url: str):
+def profile(request: ProfileRequest):
     try:
-        books = process_profile(profile_url)
+        books = process_profile(request.profile_url)
         cont = extract_authors(books)
         cc = generate_country_count(cont)
         full_count = process_country_count(cc)
