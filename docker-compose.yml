@@ -3,7 +3,7 @@ services:
   db:
     build:
       context: .
-      dockerfile: /docker/db/dockerfile
+      dockerfile: ./docker/db/dockerfile
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -12,7 +12,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: /docker/backend/dockerfile
+      dockerfile: ./docker/backend/dockerfile
     volumes:
       - .:/app
     ports:
