@@ -14,8 +14,6 @@ def apply_migrations():
     alembic_cfg = Config("alembic.ini")
     command.upgrade(alembic_cfg, "head")
 
-    yield
-
 
 def test_profile_endpoint():
     response = client.post(
