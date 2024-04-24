@@ -16,9 +16,6 @@ def apply_migrations():
 
     yield
 
-    # Teardown: Optionally, you can downgrade or drop tables
-    command.downgrade(alembic_cfg, "base")
-
 
 def test_profile_endpoint():
     response = client.post(
