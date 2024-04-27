@@ -16,6 +16,7 @@ def apply_migrations():
 
 
 def test_profile_endpoint():
+    print("oi!")
     response = client.post(
         "/process-profile/",
         json={

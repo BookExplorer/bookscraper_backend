@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y wget gnupg2 netcat \
 # Copy the rest of your application's code to the container
 COPY . /app
 
-# Command to run when starting the container
-RUN chmod +x ./docker/backend/entrypoint.sh
+# # Command to run when starting the container
+# RUN chmod +x ./docker/backend/entrypoint.sh
 
-CMD ["/app/docker/backend/entrypoint.sh"]
+# ENTRYPOINT ["./docker/backend/entrypoint.sh"]
 
 ENV CHROME_OPTS="--no-sandbox --disable-dev-shm-usage --headless --disable-gpu"
