@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y wget gnupg2 \
 COPY . /app
 
 # Command to run when starting the container
-CMD ["uvicorn", "backend_api:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN chmod +x ./docker/backend/entrypoint.sh
+
+CMD ["/app/docker/backend/entrypoint.sh"]
 
 ENV CHROME_OPTS="--no-sandbox --disable-dev-shm-usage --headless --disable-gpu"
