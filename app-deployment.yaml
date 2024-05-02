@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-app  # Changed to a more typical label
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: backend-app  # Changed to match the selector
+    spec:
+      containers:
+        - env:
+            - name: DATABASE_URL
+              value: postgresql://myuser:mysecretpassword@db/bookmap_db
+          image: bookscraper_backend-app:v1  # Ensure this is correctly specified
+          name: app
+          ports:
+            - containerPort: 8000
+      restartPolicy: Always
