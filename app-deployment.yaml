@@ -18,7 +18,7 @@ spec:
         - env:
             - name: DATABASE_URL
               value: postgresql://myuser:mysecretpassword@db/bookmap_db
-          image: bookscraper_backend-app:v1  # Ensure this is correctly specified
+          image: bookscraper_backend-app:latest  # Ensure this is correctly specified
           name: app
           ports:
             - containerPort: 8000

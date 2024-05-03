@@ -19,6 +19,7 @@ spec:
       containers:
         - name: bookscraper-backend-db  # Corrected name
           image: bookscraper_backend-db:latest
+          imagePullPolicy: IfNotPresent  # Add this line
           ports:
             - containerPort: 5432
           volumeMounts:
