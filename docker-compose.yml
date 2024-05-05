@@ -32,3 +32,4 @@ volumes:
 networks:
   app-network: # This will create the network if it does not exist
     driver: bridge
+    name: bookscraper-network
