@@ -8,6 +8,8 @@ services:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - app-network
 
   app:
     build:
@@ -21,6 +23,13 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql://myuser:mysecretpassword@db/bookmap_db
+    networks:
+      - app-network
 
 volumes:
   pgdata:
+
+networks:
+  app-network: # This will create the network if it does not exist
+    driver: bridge
+    name: bookscraper-network
