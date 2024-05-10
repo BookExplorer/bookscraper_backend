@@ -1,5 +1,6 @@
 import pytest
 from backend import extract_authors, generate_country_count
+from goodreads_scraper.scrape import scrape_shelf, create_shelf_url
 from collections import Counter
 from unittest.mock import patch
 from models import Author
@@ -91,3 +92,14 @@ def test_integration():
 
         # Assert to check if the results match the expected output
         assert country_count == expected_countries, "Country counts are incorrect"
+
+
+def test_real_shelf():
+    books = scrape_shelf(
+        "https://www.goodreads.com/review/list/66818479-lucas-pavanelli?shelf=read"
+    )
+    authors = extract_authors(books)
+    country_count = generate_country_count(authors)
+    assert len(books) >= sum(
+        country_count.values()
+    ), "Country counts are larger than the number of books."
