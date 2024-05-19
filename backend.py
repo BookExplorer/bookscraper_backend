@@ -1,7 +1,6 @@
-from goodreads_scraper.scrape import process_profile, scrape_shelf
+from goodreads_scraper.scrape import process_profile, scrape_gr_author
 from typing import Dict, List
 from collections import Counter
-from utils import scrape_gr_author, cleanup_birthplace
 import pandas as pd
 import pycountry
 from database import fetch_author_by_id, insert_author, SessionLocal
@@ -41,8 +40,9 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
             if author:
                 country = author.birth_country
             else:
-                birthplace = scrape_gr_author(author_link)  # Scrape the birthplace
-                country = cleanup_birthplace(birthplace)
+                birthplace, country = scrape_gr_author(
+                    author_link
+                )  # Scrape the birthplace
                 insert_author(
                     session,
                     {
