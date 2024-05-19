@@ -523,7 +523,7 @@ validators = "^0.22.0"
 type = "git"
 url = "https://github.com/tamireinhorn/Goodreads-Scraper.git"
 reference = "main"
-resolved_reference = "5be721cb5564bd4b12dace94c2175f0548e8dd07"
+resolved_reference = "9e27e01e774ee3614ea026c26810cd1ba53c076b"
 
 [[package]]
 name = "greenlet"
