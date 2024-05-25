@@ -6,6 +6,8 @@ from backend import (
     generate_country_count,
 )
 from pydantic import BaseModel, HttpUrl
+from fastapi.middleware.wsgi import WSGIMiddleware
+from werkzeug.middleware.profiler import ProfilerMiddleware
 
 
 class ProfileRequest(BaseModel):
@@ -13,6 +15,17 @@ class ProfileRequest(BaseModel):
 
 
 app = FastAPI()
+
+
+# Add Werkzeug Profiler Middleware
+app.add_middleware(
+    WSGIMiddleware,
+    app=ProfilerMiddleware(
+        app=app,
+        restrictions=[30],  # Adjust the restrictions as needed
+        profile_dir="profile",  # Directory to save profiling results
+    ),
+)
 
 
 @app.post("/process-profile/")
