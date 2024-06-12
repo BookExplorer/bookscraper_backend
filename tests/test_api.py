@@ -1,11 +1,11 @@
 from fastapi.testclient import TestClient
-from backend_api import fast_app
+from backend_api import app
 from pytest import fixture
 from alembic.config import Config
 from alembic import command
 
 
-client = TestClient(fast_app)
+client = TestClient(app)
 
 
 @fixture(scope="session", autouse=True)
