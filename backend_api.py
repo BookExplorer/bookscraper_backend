@@ -14,21 +14,16 @@ class ProfileRequest(BaseModel):
     profile_url: HttpUrl
 
 
-app = FastAPI()
+fast_app = FastAPI()
 
 
 # Add Werkzeug Profiler Middleware
-app.add_middleware(
-    WSGIMiddleware,
-    app=ProfilerMiddleware(
-        app=app,
-        restrictions=[30],  # Adjust the restrictions as needed
-        profile_dir="profile",  # Directory to save profiling results
-    ),
+app_with_profiler = WSGIMiddleware(
+    ProfilerMiddleware(fast_app, restrictions=[30], profile_dir="profile")
 )
 
 
-@app.post("/process-profile/")
+@fast_app.post("/process-profile/")
 def profile(request: ProfileRequest):
     try:
         books = process_profile(str(request.profile_url))
