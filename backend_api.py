@@ -1,11 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from backend import (
     process_country_count,
-    process_profile,
     extract_authors,
     generate_country_count,
 )
+from goodreads_scraper.scrape import process_profile
 from pydantic import BaseModel, HttpUrl
+from fastapi.middleware.wsgi import WSGIMiddleware
+from werkzeug.middleware.profiler import ProfilerMiddleware
 
 
 class ProfileRequest(BaseModel):
@@ -13,6 +15,12 @@ class ProfileRequest(BaseModel):
 
 
 app = FastAPI()
+
+
+# Add Werkzeug Profiler Middleware
+app_with_profiler = WSGIMiddleware(
+    ProfilerMiddleware(app, restrictions=[30], profile_dir="./profile")
+)
 
 
 @app.post("/process-profile/")

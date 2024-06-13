@@ -1,9 +1,13 @@
 from goodreads_scraper.scrape import process_profile, scrape_gr_author
 from typing import Dict, List
 from collections import Counter
-import pandas as pd
 import pycountry
 from database import fetch_author_by_id, insert_author, SessionLocal
+import cProfile
+import pstats
+
+profiler = cProfile.Profile()
+profiler.enable()
 
 
 def extract_authors(books: List[Dict[str, str]]) -> Counter:
@@ -81,4 +85,6 @@ if __name__ == "__main__":
     cont = extract_authors(books)
     cc = generate_country_count(cont)
     df = process_country_count(cc)
-    print(df)
+    profiler.disable()
+    stats = pstats.Stats(profiler)
+    stats.dump_stats("./profile/my_profile.prof")

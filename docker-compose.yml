@@ -17,6 +17,7 @@ services:
       dockerfile: ./docker/backend/dockerfile
     volumes:
       - .:/app
+      - ./profile:/app/profile
     ports:
       - "8000:8000"
     depends_on:
