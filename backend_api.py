@@ -19,7 +19,7 @@ app = FastAPI()
 
 # Add Werkzeug Profiler Middleware
 app_with_profiler = WSGIMiddleware(
-    ProfilerMiddleware(app, restrictions=[30], profile_dir="profile")
+    ProfilerMiddleware(app, restrictions=[30], profile_dir="./profile")
 )
 
 
