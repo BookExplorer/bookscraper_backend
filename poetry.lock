@@ -929,6 +929,25 @@ files = [
 ]
 
 [[package]]
+name = "neo4j"
+version = "5.21.0"
+description = "Neo4j Bolt driver for Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "neo4j-5.21.0-py3-none-any.whl", hash = "sha256:f95b19ab67b83888e1c65fa6266659138f7efbecce8d5dfb42eeed2d17140af9"},
+    {file = "neo4j-5.21.0.tar.gz", hash = "sha256:6a6852354479742e43012a7f16007120e9b44bf584c97614544f2f41f46005ee"},
+]
+
+[package.dependencies]
+pytz = "*"
+
+[package.extras]
+numpy = ["numpy (>=1.7.0,<2.0.0)"]
+pandas = ["numpy (>=1.7.0,<2.0.0)", "pandas (>=1.1.0,<3.0.0)"]
+pyarrow = ["pyarrow (>=1.0.0)"]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 description = "Patch asyncio to allow nested event loops"
@@ -2027,4 +2046,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "74367698529137855673cab42e6452632d5802b11fac46520876dbe556c2e9fd"
+content-hash = "c73651d49129f9d87267c5ab5ce47956d2ef2a5a063fb18a367d826d7e6fb9f7"
