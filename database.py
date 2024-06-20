@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Row
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from models import Author
-from typing import Dict
+from typing import Dict, List
 import os
 
 DATABASE_URI = os.getenv(
@@ -29,6 +29,10 @@ def fetch_author_by_id(session: Session, id: int) -> Author:
     return session.query(Author).filter(Author.id == id).first()
 
 
+def fetch_authors_by_id(session: Session, ids: List[int]) -> Row:
+    return session.query(Author).filter(Author.id.in_(ids)).all()
+
+
 def insert_author(session: Session, author_data: Dict) -> Author:
     """Inserts a new author to the DB. Their info will be unpacked from the provided author_data dictionary.
     Thus, if the object comes in and has mismatching attributes to the class, this will fail.
@@ -44,3 +48,9 @@ def insert_author(session: Session, author_data: Dict) -> Author:
     session.add(author)
     session.commit()
     return author
+
+
+def insert_authors(session: Session, authors_data):
+    """Insert multiple authors into the database."""
+    session.bulk_insert_mappings(Author, authors_data)
+    session.commit()
