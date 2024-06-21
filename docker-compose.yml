@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: ./docker/graph_db/dockerfile
+    ports:
+      - "7474:7474" # Port for the browser interface
+      - "7687:7687" # DB port
   db:
     build:
       context: .
