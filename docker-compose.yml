@@ -12,6 +12,8 @@ services:
       - graphdata:/logs
     environment:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+    networks:
+      - app-network
   db:
     build:
       context: .
@@ -34,6 +36,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - graph_db
     environment:
       DATABASE_URL: postgresql://myuser:mysecretpassword@db/bookmap_db
     networks:
