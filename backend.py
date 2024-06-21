@@ -90,7 +90,7 @@ if __name__ == "__main__":
     stats.dump_stats("./profile/my_profile.prof")
 
 
-def process_birthplace(birthplace: str | None):
+def process_birthplace(birthplace: str | None) -> Dict[str, str] | None:
     if birthplace:
         split_birthplace = birthplace.split(",")
         geo_dict = {}
