@@ -1,5 +1,5 @@
 import pytest
-from backend import extract_authors, generate_country_count
+from backend import extract_authors, generate_country_count, process_birthplace
 from goodreads_scraper.scrape import scrape_shelf, create_shelf_url
 from collections import Counter
 from unittest.mock import patch
@@ -103,3 +103,19 @@ def test_real_shelf():
     assert len(books) >= sum(
         country_count.values()
     ), "Country counts are larger than the number of books."
+
+
+@pytest.mark.parametrize(
+    "birthplace, expected",
+    [
+        (
+            "Limoeiro do Norte, Ceará, Brazil",
+            {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte"},
+        ),
+        ("Rome, Italy", {"country": "Italy", "city": "Rome"}),
+        ("", None),
+    ],
+)
+def test_birthplace_processing(birthplace, expected):
+    result = process_birthplace(birthplace)
+    assert result == expected

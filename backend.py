@@ -88,3 +88,14 @@ if __name__ == "__main__":
     profiler.disable()
     stats = pstats.Stats(profiler)
     stats.dump_stats("./profile/my_profile.prof")
+
+
+def process_birthplace(birthplace: str | None):
+    if birthplace:
+        split_birthplace = birthplace.split(",")
+        geo_dict = {}
+        geo_dict["city"] = split_birthplace[0].strip()
+        geo_dict["country"] = split_birthplace[-1].strip()
+        if len(split_birthplace) > 2:
+            geo_dict["region"] = split_birthplace[1].strip()
+        return geo_dict
