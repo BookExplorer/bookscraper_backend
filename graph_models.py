@@ -4,6 +4,8 @@ from neomodel import (
     IntegerProperty,
     UniqueIdProperty,
     RelationshipTo,
+    One,
+    ZeroOrOne,
 )
 
 
@@ -13,18 +15,18 @@ class Country(StructuredNode):
 
 class Region(StructuredNode):
     name = StringProperty(required=True)
-    country = RelationshipTo(Country, "WITHIN")
+    country = RelationshipTo(Country, "WITHIN", cardinality=One)
 
 
 class City(StructuredNode):
     name = StringProperty(required=True)
     # If a region exists
-    region = RelationshipTo(Region, "WITHIN")
-    country = RelationshipTo(Country, "WITHIN")
+    region = RelationshipTo(Region, "WITHIN", cardinality=ZeroOrOne)
+    country = RelationshipTo(Country, "WITHIN", cardinality=One)
 
 
 class Author(StructuredNode):
     uid = UniqueIdProperty()
     goodreads_id = StringProperty(unique_index=True)
     name = StringProperty(required=True)
-    city = RelationshipTo(City)
+    city = RelationshipTo(City, cardinality=ZeroOrOne)
