@@ -7,6 +7,9 @@ services:
     ports:
       - "7474:7474" # Port for the browser interface
       - "7687:7687" # DB port
+    volumes:
+      - ./neo4j_db/data:/data
+      - ./neo4j_db/logs:/logs
   db:
     build:
       context: .
