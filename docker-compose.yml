@@ -8,8 +8,8 @@ services:
       - "7474:7474" # Port for the browser interface
       - "7687:7687" # DB port
     volumes:
-      - ./neo4j_db/data:/data
-      - ./neo4j_db/logs:/logs
+      - graphdata:/data
+      - graphdata:/logs
   db:
     build:
       context: .
@@ -39,6 +39,7 @@ services:
 
 volumes:
   pgdata:
+  graphdata:
 
 networks:
   app-network: # This will create the network if it does not exist
