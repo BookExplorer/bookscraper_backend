@@ -10,6 +10,8 @@ services:
     volumes:
       - graphdata:/data
       - graphdata:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
   db:
     build:
       context: .
