@@ -930,13 +930,12 @@ files = [
 
 [[package]]
 name = "neo4j"
-version = "5.21.0"
+version = "5.19.0"
 description = "Neo4j Bolt driver for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "neo4j-5.21.0-py3-none-any.whl", hash = "sha256:f95b19ab67b83888e1c65fa6266659138f7efbecce8d5dfb42eeed2d17140af9"},
-    {file = "neo4j-5.21.0.tar.gz", hash = "sha256:6a6852354479742e43012a7f16007120e9b44bf584c97614544f2f41f46005ee"},
+    {file = "neo4j-5.19.0.tar.gz", hash = "sha256:23704f604214174f3b7d15a38653a1462809986019dfdaf773ff7ca4e1b9e2de"},
 ]
 
 [package.dependencies]
@@ -946,6 +945,25 @@ pytz = "*"
 numpy = ["numpy (>=1.7.0,<2.0.0)"]
 pandas = ["numpy (>=1.7.0,<2.0.0)", "pandas (>=1.1.0,<3.0.0)"]
 pyarrow = ["pyarrow (>=1.0.0)"]
+
+[[package]]
+name = "neomodel"
+version = "5.3.1"
+description = "An object mapper for the neo4j graph database."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "neomodel-5.3.1-py3-none-any.whl", hash = "sha256:e658e44425b1d043c4bb77a3b61a09c126c49c672a501c28915034907fc7c84a"},
+    {file = "neomodel-5.3.1.tar.gz", hash = "sha256:9b4d9e6f003ac83c609f5a3775dbc9c051d2fcf2e5a2ef8250102cd2fb68cd09"},
+]
+
+[package.dependencies]
+neo4j = ">=5.19.0,<5.20.0"
+
+[package.extras]
+dev = ["Shapely (>=2.0.0)", "black", "isort", "pre-commit", "pytest (>=7.1)", "pytest-asyncio", "pytest-cov (>=4.0)", "unasync"]
+numpy = ["numpy"]
+pandas = ["pandas"]
 
 [[package]]
 name = "nest-asyncio"
@@ -2046,4 +2064,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c73651d49129f9d87267c5ab5ce47956d2ef2a5a063fb18a367d826d7e6fb9f7"
+content-hash = "82bb87d0b20209e94505da6cb98a465236bca386753d6af5ab7edfa6ac8defa0"
