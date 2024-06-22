@@ -1,6 +1,8 @@
 from goodreads_scraper.scrape import process_profile, scrape_gr_author
 from typing import Dict, List
 from collections import Counter
+from graph_models import Country, Region, Author, City
+from graph_db import geo_nodes
 import pycountry
 from database import fetch_author_by_id, insert_author, SessionLocal
 import cProfile
@@ -79,6 +81,18 @@ def process_country_count(country_count: Dict[str, int]) -> List[Dict[str, any]]
     return complete_data
 
 
+def process_birthplace(birthplace: str | None) -> Dict[str, str] | None:
+    if birthplace:
+        split_birthplace = birthplace.split(",")
+        geo_dict = {}
+        geo_dict["city"] = split_birthplace[0].strip()
+        geo_dict["country"] = split_birthplace[-1].strip()
+        if len(split_birthplace) > 2:
+            geo_dict["region"] = split_birthplace[1].strip()
+        geo_nodes(geo_dict)
+        return geo_dict
+
+
 if __name__ == "__main__":
     user_profile = "https://www.goodreads.com/user/show/71341746-tamir-einhorn-salem"
     books = process_profile(user_profile)
@@ -88,14 +102,3 @@ if __name__ == "__main__":
     profiler.disable()
     stats = pstats.Stats(profiler)
     stats.dump_stats("./profile/my_profile.prof")
-
-
-def process_birthplace(birthplace: str | None) -> Dict[str, str] | None:
-    if birthplace:
-        split_birthplace = birthplace.split(",")
-        geo_dict = {}
-        geo_dict["city"] = split_birthplace[0].strip()
-        geo_dict["country"] = split_birthplace[-1].strip()
-        if len(split_birthplace) > 2:
-            geo_dict["region"] = split_birthplace[1].strip()
-        return geo_dict

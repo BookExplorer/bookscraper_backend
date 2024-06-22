@@ -11,7 +11,7 @@ from neomodel import (
 
 # TODO: This has no constraints and so we need to deal with them elsewhere.
 class Country(StructuredNode):
-    uid = UniqueIdProperty()
+
     name = StringProperty(unique_index=True, required=True)
     regions = RelationshipTo("Region", "CONTAINS")
     cities = RelationshipTo("City", "CONTAINS")
@@ -19,13 +19,13 @@ class Country(StructuredNode):
 
 class Region(StructuredNode):
     # This is states or counties or whatever.
-    uid = UniqueIdProperty()
+
     name = StringProperty(required=True)
     country = RelationshipTo(Country, "WITHIN", cardinality=One)
 
 
 class City(StructuredNode):
-    uid = UniqueIdProperty()
+
     name = StringProperty(required=True)
     # If a region exists
     region = RelationshipTo(Region, "WITHIN", cardinality=ZeroOrOne)
@@ -33,7 +33,6 @@ class City(StructuredNode):
 
 
 class Author(StructuredNode):
-    uid = UniqueIdProperty()
     goodreads_id = StringProperty(unique_index=True)
     goodreads_link = StringProperty()
     name = StringProperty(required=True)
