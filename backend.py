@@ -2,7 +2,7 @@ from goodreads_scraper.scrape import process_profile, scrape_gr_author
 from typing import Dict, List
 from collections import Counter
 from graph_models import Country, Region, Author, City
-from graph_db import geo_nodes
+from graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
 import pycountry
 from database import fetch_author_by_id, insert_author, SessionLocal
 import cProfile
@@ -42,27 +42,22 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
     country_counter = {}
     with SessionLocal() as session:
         for (author_id, author_link, author_name), count in cont.items():
-            author = fetch_author_by_id(session, author_id)
+            author_dict = {
+                "name": author_name,
+                "goodreads_id": author_id,
+                "goodreads_link": author_link,
+            }
+            author = fetch_author_by_gr_id(author_id)
             if author:
-                country = author.birth_country
+                country = get_author_place(author, "Country")
             else:
-                birthplace, country = scrape_gr_author(
-                    author_link
-                )  # Scrape the birthplace
-                insert_author(
-                    session,
-                    {
-                        "birth_place": birthplace,
-                        "birth_country": country,
-                        "id": author_id,
-                        "name": author_name,
-                        "gr_link": author_link,
-                    },
-                )
-            if country and country in country_counter:
-                country_counter[country] += count
+                birthplace, _ = scrape_gr_author(author_link)  # Scrape the birthplace
+                geo_dict = process_birthplace(birthplace)
+                country = insert_everything(author_dict, geo_dict)
+            if country and country.name in country_counter:
+                country_counter[country.name] += count
             elif country:
-                country_counter[country] = count
+                country_counter[country.name] = count
     return country_counter
 
 
@@ -89,7 +84,6 @@ def process_birthplace(birthplace: str | None) -> Dict[str, str] | None:
         geo_dict["country"] = split_birthplace[-1].strip()
         if len(split_birthplace) > 2:
             geo_dict["region"] = split_birthplace[1].strip()
-        geo_nodes(geo_dict)
         return geo_dict
 
 
