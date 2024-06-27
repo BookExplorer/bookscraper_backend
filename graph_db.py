@@ -7,17 +7,6 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
 config.DATABASE_URL = f"bolt://neo4j:{NEO4J_PASSWORD}@localhost:7687"
 
 
-# TODO: This is not efficient, as every author created is a roundtrip to the DB...
-@db.transaction
-def insert_author(author: Dict):
-    if "name" not in author or not author["name"]:
-        raise ValueError(f"Missing name for this author dict: {author}")
-    # TODO: Here, we don't get the author's relationship with city.
-    author_node = Author.get_or_create(
-        {"goodreads_id": author["goodreads_id"], "name": author["name"]},
-        defaults=author,
-    )
-    return author_node
 
 # TODO: Can this be a single function/factory? 
 def city_region_exists(city_name: str, region_name: str) -> bool:
@@ -116,12 +105,23 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> City:
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
         city_node = City(name = geo_dict["city"])
     else:
-        print(f"This combination for city already exists, so we didn't create it..")
+        print(f"This combination for city already exists, so we didn't create it.")
         city_node =  City.nodes.get(name = geo_dict["city"])
     return city_node
 
+
 @db.transaction
 def create_author(author_dict: Dict[str, str]) -> Author:
+    """Unpacks the author dict and creates the Author node.
+    This will only match the existing fields in the Author node to fields in the author_dict.
+    This ensures that extra fields in the dict won't break creation.
+
+    Args:
+        author_dict (Dict[str, str]): Dictionary with author information.
+
+    Returns:
+        Author: Created Author node.
+    """
     # An author is unique by goodreads ID and that's it so far.
     a = Author(**author_dict)
     a.save()
@@ -129,9 +129,27 @@ def create_author(author_dict: Dict[str, str]) -> Author:
 
 
 def fetch_author_by_gr_id(goodreads_id: int) -> Author:
+    """Gets Author node by goodreads id if applicable.
+
+    Args:
+        goodreads_id (int): Goodreads id for a specific author.
+
+    Returns:
+        Author: Author node with that Goodreads id.
+    """
     return Author.nodes.get_or_none(goodreads_id = goodreads_id)
 
+
 def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, str]| None) -> Country| None:
+    """Inserts all necessary nodes according to the information received, both the Author node and the geographical nodes.
+
+    Args:
+        author_dict (Dict[str, str]): Dictionary with the author information for node creation.
+        geo_dict (Dict[str, str] | None): Dictionary with the geographical information, if it exists, for node creation.
+
+    Returns:
+        Country| None: If there is a geographical dictionary, return the created/existing Country node.
+    """
     author: Author = create_author(author_dict)
     # Create regions if applicable.:
     if geo_dict:
@@ -140,7 +158,9 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, str]| Non
             author.birth_city.connect(city)
         return country
 
+
 def create_constraints():
+    
     queries = [
         "CREATE CONSTRAINT country_name FOR (country:Country) REQUIRE country.name IS UNIQUE",
         "CREATE CONSTRAINT author_gr_id FOR (author:Author) REQUIRE author.goodreads_id IS UNIQUE"
@@ -152,13 +172,23 @@ def create_constraints():
             print(f"Error creating constraint: {e}")
 
 
-def get_author_place(author: Author, desired_entity: str = "Country") -> StructuredNode:
+def get_author_place(author: Author, desired_entity: str = "Country") -> StructuredNode | None:
+    """From an Author node, via the City he was born in, get the node (Region or Country) where he was born.
+    Will execute a Cypher query on that Author, so results are not guaranteed.
+
+    Args:
+        author (Author): Author node whose birth place we would like.
+        desired_entity (str): Name of the node type which we want. Should be either Region or Country for now.
+
+    Returns:
+        StructuredNode | None: Maybe this should return the specific types of nodes we could get or None.
+    """
     element_id = author.element_id
-    query = f"""
+    query = f'''
     MATCH (a:Author)-[:BORN_IN]->(c:City)-[:WITHIN*]->(co:{desired_entity}) 
     WHERE elementId(a) = $element_id
     RETURN co;
-    """
+    '''
     results, meta = db.cypher_query(
         query, {"element_id": element_id}, resolve_objects=True
     )
