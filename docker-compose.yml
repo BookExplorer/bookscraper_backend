@@ -1,5 +1,19 @@
 version: "3.8"
 services:
+  graph_db:
+    build:
+      context: .
+      dockerfile: ./docker/graph_db/dockerfile
+    ports:
+      - "7474:7474" # Port for the browser interface
+      - "7687:7687" # DB port
+    volumes:
+      - graphdata:/data
+      - graphdata:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+    networks:
+      - app-network
   db:
     build:
       context: .
@@ -22,6 +36,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - graph_db
     environment:
       DATABASE_URL: postgresql://myuser:mysecretpassword@db/bookmap_db
     networks:
@@ -29,6 +44,7 @@ services:
 
 volumes:
   pgdata:
+  graphdata:
 
 networks:
   app-network: # This will create the network if it does not exist

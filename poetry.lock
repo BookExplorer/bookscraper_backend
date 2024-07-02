@@ -929,6 +929,43 @@ files = [
 ]
 
 [[package]]
+name = "neo4j"
+version = "5.19.0"
+description = "Neo4j Bolt driver for Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "neo4j-5.19.0.tar.gz", hash = "sha256:23704f604214174f3b7d15a38653a1462809986019dfdaf773ff7ca4e1b9e2de"},
+]
+
+[package.dependencies]
+pytz = "*"
+
+[package.extras]
+numpy = ["numpy (>=1.7.0,<2.0.0)"]
+pandas = ["numpy (>=1.7.0,<2.0.0)", "pandas (>=1.1.0,<3.0.0)"]
+pyarrow = ["pyarrow (>=1.0.0)"]
+
+[[package]]
+name = "neomodel"
+version = "5.3.1"
+description = "An object mapper for the neo4j graph database."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "neomodel-5.3.1-py3-none-any.whl", hash = "sha256:e658e44425b1d043c4bb77a3b61a09c126c49c672a501c28915034907fc7c84a"},
+    {file = "neomodel-5.3.1.tar.gz", hash = "sha256:9b4d9e6f003ac83c609f5a3775dbc9c051d2fcf2e5a2ef8250102cd2fb68cd09"},
+]
+
+[package.dependencies]
+neo4j = ">=5.19.0,<5.20.0"
+
+[package.extras]
+dev = ["Shapely (>=2.0.0)", "black", "isort", "pre-commit", "pytest (>=7.1)", "pytest-asyncio", "pytest-cov (>=4.0)", "unasync"]
+numpy = ["numpy"]
+pandas = ["pandas"]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 description = "Patch asyncio to allow nested event loops"
@@ -2027,4 +2064,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "74367698529137855673cab42e6452632d5802b11fac46520876dbe556c2e9fd"
+content-hash = "82bb87d0b20209e94505da6cb98a465236bca386753d6af5ab7edfa6ac8defa0"
