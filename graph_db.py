@@ -46,6 +46,17 @@ def region_country_exists(country_name: str, region_name: str) -> bool:
 
 @db.transaction
 def create_geo_nodes(geo_dict: Dict[str, str]) -> City| None:
+    """Main function for all geographical node insertions/retrievals and connections.
+    Expects a dictionary of geographical attributes, 
+    will fetch/create the respective node as needed and connect them if applicable.
+    Should only be used internally, for now
+
+    Args:
+        geo_dict (Dict[str, str]): Dictionary of geographical attributes.
+
+    Returns:
+        City| None: City node for connection with Author node elsewhere.
+    """
     try:
         # The first node we should create is country, which already has a uniqueness check. All good on this front then.
         c = Country.get_or_create({"name": geo_dict["country"]})
@@ -160,7 +171,8 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, str]| Non
 
 
 def create_constraints():
-    
+    """Runs list of cypher queries with simple constraints for uniqueness and the like.
+    """
     queries = [
         "CREATE CONSTRAINT country_name FOR (country:Country) REQUIRE country.name IS UNIQUE",
         "CREATE CONSTRAINT author_gr_id FOR (author:Author) REQUIRE author.goodreads_id IS UNIQUE"
