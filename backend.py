@@ -62,6 +62,7 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
 
 
 def process_country_count(country_count: Dict[str, int]) -> List[Dict[str, any]]:
+    # TODO: Is this necessary?
     # Get a list of all country names using pycountry
     all_countries = [country.name for country in pycountry.countries]
 
@@ -77,6 +78,14 @@ def process_country_count(country_count: Dict[str, int]) -> List[Dict[str, any]]
 
 
 def process_birthplace(birthplace: str | None) -> Dict[str, str] | None:
+    """Processes the birthplac string from Goodreads if it exists and returns a dictionary with attributes.
+
+    Args:
+        birthplace (str | None): String with geographical attributes separated by comma.
+
+    Returns:
+        Dict[str, str] | None: Dictionary with at least country and city geographical attributes.
+    """
     if birthplace:
         split_birthplace = birthplace.split(",")
         geo_dict = {}
