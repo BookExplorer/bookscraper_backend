@@ -1,13 +1,17 @@
 from neomodel import config, db, StructuredNode
 import os
 from graph_models import Author, City, Country, Region
-from typing import List, Dict
+from typing import Dict
 
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
-config.DATABASE_URL = f"bolt://neo4j:{NEO4J_PASSWORD}@localhost:7687"
+#config.DATABASE_URL = f"bolt://neo4j:{NEO4J_PASSWORD}@localhost:7687"
 
 
+def setup_db():
+    db.set_connection(f"bolt://neo4j:{NEO4J_PASSWORD}@localhost:7687")
 
+
+setup_db()
 # TODO: Can this be a single function/factory? 
 def city_region_exists(city_name: str, region_name: str) -> bool:
     query = """
@@ -19,6 +23,7 @@ def city_region_exists(city_name: str, region_name: str) -> bool:
         query, {"city_name": city_name, "region_name": region_name}
     )
     return len(results) > 0
+
 
 def city_country_exists(city_name: str, country_name: str) -> bool:
     query = """
@@ -45,7 +50,7 @@ def region_country_exists(country_name: str, region_name: str) -> bool:
 
 
 @db.transaction
-def create_geo_nodes(geo_dict: Dict[str, str]) -> City| None:
+def create_geo_nodes(geo_dict: Dict[str, str]) -> City | None:
     """Main function for all geographical node insertions/retrievals and connections.
     Expects a dictionary of geographical attributes, 
     will fetch/create the respective node as needed and connect them if applicable.
