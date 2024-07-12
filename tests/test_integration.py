@@ -24,9 +24,9 @@ def neo4j_container():
         yield n4
 
 
-def test_real_shelf():
+def test_real_small_shelf():
     books = scrape_shelf(
-        "https://www.goodreads.com/review/list/71341746-tamir-einhorn-salem?ref=nav_mybooks&shelf=to-read"
+        "https://www.goodreads.com/review/list/71341746-tamir-einhorn-salem?ref=nav_mybooks&shelf=comprar-em-outra-lingua"
     )
     authors = extract_authors(books)
     country_count = generate_country_count(authors)
