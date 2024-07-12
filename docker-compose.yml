@@ -14,16 +14,6 @@ services:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
     networks:
       - app-network
-  db:
-    build:
-      context: .
-      dockerfile: ./docker/db/dockerfile
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - app-network
 
   app:
     build:

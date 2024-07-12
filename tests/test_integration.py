@@ -12,7 +12,7 @@ def neo4j_container():
     with Neo4jContainer(
         image="neo4j:5.20.0", password="password", username="neo4j"
     ) as n4:
-        # Map to different local ports to avoid conflicts
+        # Map to different local ports to avoid conflicts with container.
         n4.with_bind_ports(
             7687, 7688
         )  # Map container's Bolt port 7687 to local port 7688
