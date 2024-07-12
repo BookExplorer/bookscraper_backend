@@ -3,16 +3,7 @@ import os
 from graph_models import Author, City, Country, Region
 from typing import Dict
 
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
-NEO4J_URI = os.getenv("NEO4J_URI")
-#config.DATABASE_URL = f"bolt://neo4j:{NEO4J_PASSWORD}@localhost:7687"
 
-
-def setup_db():
-    db.set_connection(f"bolt://neo4j:{NEO4J_PASSWORD}@{NEO4J_URI}")
-
-
-setup_db()
 # TODO: Can this be a single function/factory? 
 def city_region_exists(city_name: str, region_name: str) -> bool:
     query = """
