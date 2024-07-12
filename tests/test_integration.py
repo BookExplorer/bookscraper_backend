@@ -33,3 +33,7 @@ def test_real_small_shelf():
     assert len(books) >= sum(
         country_count.values()
     ), "Country counts are larger than the number of books."
+
+
+# TODO: Tests need to be created for all operations in Graph DB as well.
+# TODO: Maybe we should use pytest coverage to see which functions aren't even tested?
