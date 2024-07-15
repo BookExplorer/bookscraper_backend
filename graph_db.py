@@ -29,7 +29,7 @@ def city_country_exists(city_name: str, country_name: str) -> bool:
     return len(results) > 0
 
 
-def region_country_exists(country_name: str, region_name: str) -> bool:
+def region_country_exists(region_name: str, country_name: str) -> bool:
     query = """
     MATCH (r:Region)-[:WITHIN]->(c:Country {name: $country_name})
     WHERE r.name = $region_name
@@ -89,12 +89,15 @@ def create_or_get_region(geo_dict: Dict[str, str]) -> Region:
         Region: The desired region node.
     """
     # Validate constraints
-    if not region_country_exists(geo_dict["country"], geo_dict["region"]):
+    created = None
+    if not region_country_exists(geo_dict["region"], geo_dict["country"],):
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
         region_node = Region(name = geo_dict["region"])
+        created = True
     else:
         print(f"The region {geo_dict["region"]} already exists within {geo_dict["country"]} so we didn't create it.")
         region_node =  Region.nodes.get(name = geo_dict["region"])
+        created = False
     return region_node
 
 
@@ -108,13 +111,15 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> City:
         City: The desired City node.
     """
     # Validate constraints.
-    
+    created = None
     if not city_country_exists(geo_dict["city"], geo_dict["country"]) and not city_region_exists(geo_dict["city"], geo_dict.get("region", "")):
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
         city_node = City(name = geo_dict["city"])
+        created = True
     else:
         print(f"This combination for city already exists, so we didn't create it.")
         city_node =  City.nodes.get(name = geo_dict["city"])
+        created = False
     return city_node
 
 

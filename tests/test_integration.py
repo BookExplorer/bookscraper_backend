@@ -1,8 +1,13 @@
 from testcontainers.neo4j import Neo4jContainer
 import pytest
-import os
-from backend import extract_authors, generate_country_count, process_birthplace
-from goodreads_scraper.scrape import scrape_shelf, create_shelf_url
+from backend import extract_authors, generate_country_count
+from goodreads_scraper.scrape import scrape_shelf
+from graph_db import (
+    create_geo_nodes,
+    region_country_exists,
+    city_region_exists,
+    create_constraints,
+)
 from setup import setup_db
 from neomodel import db
 
@@ -20,11 +25,17 @@ def neo4j_container():
         neo4j_uri = n4.get_connection_url()
         neo4j_password = n4.password
         n4.start()
+        # This maps out, temporarily, the DB connection to the test container.
         setup_db(neo4j_uri, neo4j_password)
+        create_constraints()
         yield n4
 
 
+# TODO: Add cleanup fixture and something just for good measure checking the db we connect to starts empty here, if not it's not the testcontainer
+
+
 def test_real_small_shelf():
+    # Keep in mind this very small shelf might not have repeated geo nodes and is thus not an extensive test.
     books = scrape_shelf(
         "https://www.goodreads.com/review/list/71341746-tamir-einhorn-salem?ref=nav_mybooks&shelf=comprar-em-outra-lingua"
     )
@@ -37,3 +48,14 @@ def test_real_small_shelf():
 
 # TODO: Tests need to be created for all operations in Graph DB as well.
 # TODO: Maybe we should use pytest coverage to see which functions aren't even tested?
+def test_repeated_cr():
+    country = "Brazil"
+    city = "Rio de Janeiro"
+    region = "Rio de Janeiro"
+    geo_dict = {"country": country, "region": region, "city": city}
+    assert city_region_exists(city, region) is False
+    assert region_country_exists(region, country) is False
+    create_geo_nodes(geo_dict)
+    assert city_region_exists(city, region) is True
+    assert region_country_exists(region, country) is True
+    # How do I verify, here, that there is no duplicate creation?
