@@ -59,10 +59,10 @@ def create_geo_nodes(geo_dict: Dict[str, str]) -> City | None:
         c = Country.get_or_create({"name": geo_dict["country"]})
         country_node = c[0]
         # Then, we create the city node.
-        city_node = create_or_get_city(geo_dict)
+        city_node, created = create_or_get_city(geo_dict)
         city_node.save()
         if "region" in geo_dict:
-            region_node = create_or_get_region(geo_dict)
+            region_node, created = create_or_get_region(geo_dict)
             region_node.save()
             if not region_node.country.is_connected(country_node):
                 region_node.country.connect(country_node)
@@ -79,7 +79,7 @@ def create_geo_nodes(geo_dict: Dict[str, str]) -> City | None:
         print(e)
 
 
-def create_or_get_region(geo_dict: Dict[str, str]) -> Region:
+def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
     """Creates a Region node if and only if it satisfies the validation criteria.
 
     Args:
@@ -98,10 +98,10 @@ def create_or_get_region(geo_dict: Dict[str, str]) -> Region:
         print(f"The region {geo_dict["region"]} already exists within {geo_dict["country"]} so we didn't create it.")
         region_node =  Region.nodes.get(name = geo_dict["region"])
         created = False
-    return region_node
+    return region_node, created
 
 
-def create_or_get_city(geo_dict: Dict[str, str]) -> City:
+def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
     """Creates a City node if and only if it satisfies the validation criteria.
 
     Args:
@@ -120,7 +120,7 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> City:
         print(f"This combination for city already exists, so we didn't create it.")
         city_node =  City.nodes.get(name = geo_dict["city"])
         created = False
-    return city_node
+    return city_node, created
 
 
 @db.transaction
