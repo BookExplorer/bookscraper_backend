@@ -95,7 +95,7 @@ def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
         region_node = Region(name = geo_dict["region"])
         created = True
     else:
-        print(f"The region {geo_dict["region"]} already exists within {geo_dict["country"]} so we didn't create it.")
+        print(f"The region {geo_dict['region']} already exists within {geo_dict['country']} so we didn't create it.")
         region_node =  Region.nodes.get(name = geo_dict["region"])
         created = False
     return region_node, created
