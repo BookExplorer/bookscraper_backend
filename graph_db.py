@@ -1,5 +1,4 @@
-from neomodel import config, db, StructuredNode
-import os
+from neomodel import db, StructuredNode
 from graph_models import Author, City, Country, Region
 from typing import Dict
 
@@ -42,7 +41,7 @@ def region_country_exists(region_name: str, country_name: str) -> bool:
 
 
 @db.transaction
-def create_geo_nodes(geo_dict: Dict[str, str]) -> City | None:
+def create_geo_nodes(geo_dict: Dict[str, str]) -> tuple[City, Country, bool, bool]| None:
     """Main function for all geographical node insertions/retrievals and connections.
     Expects a dictionary of geographical attributes, 
     will fetch/create the respective node as needed and connect them if applicable.
@@ -54,29 +53,28 @@ def create_geo_nodes(geo_dict: Dict[str, str]) -> City | None:
     Returns:
         City| None: City node for connection with Author node elsewhere.
     """
-    try:
-        # The first node we should create is country, which already has a uniqueness check. All good on this front then.
-        c = Country.get_or_create({"name": geo_dict["country"]})
-        country_node = c[0]
-        # Then, we create the city node.
-        city_node, created = create_or_get_city(geo_dict)
-        city_node.save()
-        if "region" in geo_dict:
-            region_node, created = create_or_get_region(geo_dict)
-            region_node.save()
-            if not region_node.country.is_connected(country_node):
-                region_node.country.connect(country_node)
-            
-            # If there is region, then city connects to region:
-            if not city_node.region.is_connected(region_node):
-                city_node.region.connect(region_node)
-        else:
-            # If there is no region, city connects to country:
-            if not city_node.country.is_connected(country_node):
-                city_node.country.connect(country_node)
-        return city_node, country_node
-    except Exception as e:
-        print(e)
+
+    # The first node we should create is country, which already has a uniqueness check. All good on this front then.
+    c = Country.get_or_create({"name": geo_dict["country"]})
+    country_node = c[0]
+    # Then, we create the city node.
+    city_node, created_city_node = create_or_get_city(geo_dict)
+    city_node.save()
+    if "region" in geo_dict:
+        region_node, created_region_node = create_or_get_region(geo_dict)
+        region_node.save()
+        if not region_node.country.is_connected(country_node):
+            region_node.country.connect(country_node)
+        
+        # If there is region, then city connects to region:
+        if not city_node.region.is_connected(region_node):
+            city_node.region.connect(region_node)
+    else:
+        # If there is no region, city connects to country:
+        if not city_node.country.is_connected(country_node):
+            city_node.country.connect(country_node)
+    return city_node, country_node, created_city_node, created_region_node
+
 
 
 def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
@@ -117,7 +115,7 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
         city_node = City(name = geo_dict["city"])
         created = True
     else:
-        print(f"This combination for city already exists, so we didn't create it.")
+        print("This combination for city already exists, so we didn't create it.")
         city_node =  City.nodes.get(name = geo_dict["city"])
         created = False
     return city_node, created
@@ -166,10 +164,11 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, str]| Non
     author: Author = create_author(author_dict)
     # Create regions if applicable.:
     if geo_dict:
-        city, country = create_geo_nodes(geo_dict)
+        city, country, _ = create_geo_nodes(geo_dict)
         if not author.birth_city.is_connected(city):
             author.birth_city.connect(city)
         return country
+    return None
 
 
 def create_constraints():
@@ -208,6 +207,7 @@ def get_author_place(author: Author, desired_entity: str = "Country") -> Structu
     )
     if results:
         return results[0][0]
+    return None
 
 if __name__ == "__main__":
     create_constraints()

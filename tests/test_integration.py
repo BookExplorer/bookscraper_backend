@@ -9,7 +9,7 @@ from graph_db import (
     create_constraints,
 )
 from setup import setup_db
-from neomodel import db
+
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -29,6 +29,7 @@ def neo4j_container():
         setup_db(neo4j_uri, neo4j_password)
         create_constraints()
         yield n4
+
 
 
 # TODO: Add cleanup fixture and something just for good measure checking the db we connect to starts empty here, if not it's not the testcontainer
@@ -59,3 +60,23 @@ def test_repeated_cr():
     assert city_region_exists(city, region) is True
     assert region_country_exists(region, country) is True
     # How do I verify, here, that there is no duplicate creation?
+
+
+def test_city_region_creation() -> None:
+    country = "Brazil"
+    city = "Rio de Janeiro"
+    region = "Rio de Janeiro"
+    geo_dict = {"country": country, "region": region, "city": city}
+    # First, we make sure the region doesnt exist within the country
+    assert not region_country_exists(region, country), "This region doesn't previously exist within the country"
+    # We also want to make sure the city within region is not an existing pair
+    assert not city_region_exists(city, region), "This city doesn't previously exist within the region"
+    # Next, we create everything
+    _, _, created_city, created_region = create_geo_nodes(geo_dict)
+    assert region_country_exists(region, country), "Now the region exists within country"
+    assert city_region_exists(city, region), "Now the city exists within the region"
+    assert created_city
+    assert created_region
+    _, _, created_city, created_region = create_geo_nodes(geo_dict)
+    assert not created_city, "We didn't need to create the city within the region because it already exists."
+    assert not created_region, "We didn't need to create the region within the country because it already exists."
