@@ -7,6 +7,7 @@ from graph_db import (
     region_country_exists,
     city_region_exists,
     create_constraints,
+    city_country_exists
 )
 from setup import setup_db
 
@@ -80,3 +81,19 @@ def test_city_region_creation() -> None:
     _, _, created_city, created_region = create_geo_nodes(geo_dict)
     assert not created_city, "We didn't need to create the city within the region because it already exists."
     assert not created_region, "We didn't need to create the region within the country because it already exists."
+
+
+
+def test_city_country_creation() -> None:
+    country = "Israel"
+    city = "Tel Aviv"
+    geo_dict = {"country": country, "city": city}
+    # First, we make sure the region doesnt exist within the country
+    # We also want to make sure the city within region is not an existing pair
+    assert not city_country_exists(city, country), "This city doesn't previously exist within the country"
+    # Next, we create everything
+    _, _, created_city, _ = create_geo_nodes(geo_dict)
+    assert city_country_exists(city, country), "Now the city exists within the country"
+    assert created_city
+    _, _, created_city, _ = create_geo_nodes(geo_dict)
+    assert not created_city, "We didn't need to create the city within the country because it already exists."

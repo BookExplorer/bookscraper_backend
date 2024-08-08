@@ -60,6 +60,7 @@ def create_geo_nodes(geo_dict: Dict[str, str]) -> tuple[City, Country, bool, boo
     # Then, we create the city node.
     city_node, created_city_node = create_or_get_city(geo_dict)
     city_node.save()
+    created_region_node = None
     if "region" in geo_dict:
         region_node, created_region_node = create_or_get_region(geo_dict)
         region_node.save()
