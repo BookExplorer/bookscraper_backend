@@ -3,41 +3,26 @@ from graph_models import Author, City, Country, Region
 from typing import Dict
 
 
-# TODO: Can this be a single function/factory? 
-def city_region_exists(city_name: str, region_name: str) -> bool:
-    query = """
-    MATCH (c:City)-[:WITHIN]->(r:Region {name: $region_name})
-    WHERE c.name = $city_name
+def pair_exists(origin_type: str, origin_name: str, destination_type: str, destination_name: str):
+    query = f"""
+    MATCH (c:{origin_type})-[:WITHIN]->(r:{destination_type} {{name: '{destination_name}'}})
+    WHERE c.name = '{origin_name}'
     RETURN c
     """
-    results, meta = db.cypher_query(
-        query, {"city_name": city_name, "region_name": region_name}
-    )
+    results, meta = db.cypher_query(query)
     return len(results) > 0
+
+
+def city_region_exists(city_name: str, region_name: str) -> bool:
+    return pair_exists("City", city_name, "Region", region_name)
 
 
 def city_country_exists(city_name: str, country_name: str) -> bool:
-    query = """
-    MATCH (c:City)-[:WITHIN]->(r:Country {name: $country_name})
-    WHERE c.name = $city_name
-    RETURN c
-    """
-    results, meta = db.cypher_query(
-        query, {"city_name": city_name, "country_name": country_name}
-    )
-    return len(results) > 0
+    return pair_exists("City", city_name, "Country", country_name)
 
 
 def region_country_exists(region_name: str, country_name: str) -> bool:
-    query = """
-    MATCH (r:Region)-[:WITHIN]->(c:Country {name: $country_name})
-    WHERE r.name = $region_name
-    RETURN r
-    """
-    results, meta = db.cypher_query(
-        query, {"country_name": country_name, "region_name": region_name}
-    )
-    return len(results) > 0
+    return pair_exists("Region", region_name, "Country", country_name)
 
 
 @db.transaction
