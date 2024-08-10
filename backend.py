@@ -1,10 +1,9 @@
 from goodreads_scraper.scrape import process_profile, scrape_gr_author
 from typing import Dict, List
 from collections import Counter
-from graph_models import Country, Region, Author, City
 from graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
 import pycountry
-from database import fetch_author_by_id, insert_author, SessionLocal
+from database import SessionLocal
 import cProfile
 import pstats
 
