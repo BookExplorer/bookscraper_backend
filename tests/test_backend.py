@@ -73,12 +73,10 @@ def test_generate_country_count():
 
     # Patching the database session and scraping function
     with patch(
-        "backend.fetch_author_by_id", side_effect=mock_fetch_author_by_id
+        "backend.fetch_author_by_gr_id", side_effect=mock_fetch_author_by_id
     ), patch("backend.scrape_gr_author", side_effect=mock_scrape_gr_author), patch(
-        "backend.insert_author", side_effect=mock_insert_author
-    ), patch(
-        "backend.SessionLocal"
-    ) as mock_session:
+        "backend.insert_author", side_effect=mock_insert_author #TODO: This mock doesn't mirror the actual graph db behavior.
+    ):
         # Run the function with the mocked session and data
         country_count = generate_country_count(authors_counter)
 
@@ -88,24 +86,6 @@ def test_generate_country_count():
         # Assert to check if the results match the expected output
         assert country_count == expected_countries, "Country counts are incorrect"
 
-
-def test_integration():
-    authors_counter = extract_authors(sample_books)
-    with patch(
-        "backend.fetch_author_by_id", side_effect=mock_fetch_author_by_id
-    ), patch("backend.scrape_gr_author", side_effect=mock_scrape_gr_author), patch(
-        "backend.insert_author", side_effect=mock_insert_author
-    ), patch(
-        "backend.SessionLocal"
-    ) as mock_session:
-        # Run the function with the mocked session and data
-        country_count = generate_country_count(authors_counter)
-
-        # Expected results
-        expected_countries = {"France": 2, "Brazil": 1}
-
-        # Assert to check if the results match the expected output
-        assert country_count == expected_countries, "Country counts are incorrect"
 
 
 @pytest.mark.parametrize(

@@ -3,7 +3,6 @@ from typing import Dict, List
 from collections import Counter
 from graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
 import pycountry
-from database import SessionLocal
 import cProfile
 import pstats
 
@@ -39,24 +38,23 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
         Dict[str, int]: Dictionary with the number of books read per country.
     """
     country_counter = {}
-    with SessionLocal() as session:
-        for (author_id, author_link, author_name), count in cont.items():
-            author_dict = {
-                "name": author_name,
-                "goodreads_id": author_id,
-                "goodreads_link": author_link,
-            }
-            author = fetch_author_by_gr_id(author_id)
-            if author:
-                country = get_author_place(author, "Country")
-            else:
-                birthplace, _ = scrape_gr_author(author_link)  # Scrape the birthplace
-                geo_dict = process_birthplace(birthplace)
-                country = insert_everything(author_dict, geo_dict)
-            if country and country.name in country_counter:
-                country_counter[country.name] += count
-            elif country:
-                country_counter[country.name] = count
+    for (author_id, author_link, author_name), count in cont.items():
+        author_dict = {
+            "name": author_name,
+            "goodreads_id": author_id,
+            "goodreads_link": author_link,
+        }
+        author = fetch_author_by_gr_id(author_id)
+        if author:
+            country = get_author_place(author, "Country")
+        else:
+            birthplace, _ = scrape_gr_author(author_link)  # Scrape the birthplace
+            geo_dict = process_birthplace(birthplace)
+            country = insert_everything(author_dict, geo_dict)
+        if country and country.name in country_counter:
+            country_counter[country.name] += count
+        elif country:
+            country_counter[country.name] = count
     return country_counter
 
 
