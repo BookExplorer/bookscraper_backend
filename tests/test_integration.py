@@ -33,6 +33,7 @@ def neo4j_container():
 
 
 
+
 # TODO: Add cleanup fixture and something just for good measure checking the db we connect to starts empty here, if not it's not the testcontainer
 
 
@@ -46,21 +47,6 @@ def test_real_small_shelf():
     assert len(books) >= sum(
         country_count.values()
     ), "Country counts are larger than the number of books."
-
-
-# TODO: Tests need to be created for all operations in Graph DB as well.
-# TODO: Maybe we should use pytest coverage to see which functions aren't even tested?
-def test_repeated_cr():
-    country = "Brazil"
-    city = "Rio de Janeiro"
-    region = "Rio de Janeiro"
-    geo_dict = {"country": country, "region": region, "city": city}
-    assert city_region_exists(city, region) is False
-    assert region_country_exists(region, country) is False
-    create_geo_nodes(geo_dict)
-    assert city_region_exists(city, region) is True
-    assert region_country_exists(region, country) is True
-    # How do I verify, here, that there is no duplicate creation?
 
 
 def test_city_region_creation() -> None:

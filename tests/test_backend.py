@@ -41,7 +41,7 @@ sample_books = [
 
 def test_author_extraction():
     expected_count = Counter(
-        {("1", "link1", "Author One"): 2, ("2", "link2", "Author Two"): 1}
+        {(author_1.goodreads_id, author_1.goodreads_link, author_1.name): 2, (author_2.goodreads_id, author_2.goodreads_link, author_2.name): 1}
     )
     assert extract_authors(sample_books) == expected_count
 

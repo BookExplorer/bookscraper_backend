@@ -150,7 +150,7 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, str]| Non
     author: Author = create_author(author_dict)
     # Create regions if applicable.:
     if geo_dict:
-        city, country, _ = create_geo_nodes(geo_dict)
+        city, country, _, _ = create_geo_nodes(geo_dict)
         if not author.birth_city.is_connected(city):
             author.birth_city.connect(city)
         return country
