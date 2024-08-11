@@ -6,8 +6,12 @@ import logging
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
 NEO4J_URI = os.getenv("NEO4J_URI")
 
+# TODO: Something very weird is going on.
+# This being called in test_integration works fine, and neomodel.db has the correct credentials in graph_db.py
+# However, in test_api, neomodel.db has the credentials modified after setup_db has been called.
+# So again, in graph_db.py, neomodel.db will have wrong credentials and will fail any requests. Bizarre.
 
-def setup_db(uri: str | None, password: str | None):
+def setup_db(uri: str | None = None, password: str | None = None):
     """This sets up the DB connection globally for every Neo4J operation using the parameters.
     In contrast with other modules, you DON'T pass sessions/connections to the OGM.
     So in order to have operations run in a specific DB, this needs to run first.
@@ -28,4 +32,4 @@ def setup_db(uri: str | None, password: str | None):
     connection_string = f"bolt://neo4j:{password}@{uri}"
     logging.info(f"[Neo4j Setup] Setting up connection string to {uri}")
     db.set_connection(connection_string)
-    logging.info(f"[Neo4j Setup] Connection done!")
+    logging.info("[Neo4j Setup] Connection done!")

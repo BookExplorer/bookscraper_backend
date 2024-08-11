@@ -8,7 +8,7 @@ from goodreads_scraper.scrape import process_profile
 from pydantic import BaseModel, HttpUrl
 from fastapi.middleware.wsgi import WSGIMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
-
+from setup import setup_db
 
 class ProfileRequest(BaseModel):
     profile_url: HttpUrl
@@ -16,7 +16,7 @@ class ProfileRequest(BaseModel):
 
 app = FastAPI()
 
-
+setup_db()
 # Add Werkzeug Profiler Middleware
 app_with_profiler = WSGIMiddleware(
     ProfilerMiddleware(app, restrictions=[30], profile_dir="./profile")

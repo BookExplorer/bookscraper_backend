@@ -26,7 +26,7 @@ services:
     depends_on:
       - graph_db
     environment:
-      DATABASE_URL: postgresql://myuser:mysecretpassword@db/bookmap_db #TODO: Change this to neo4j.
+      DATABASE_URL: bolt://neo4j:${NEO4J_PASSWORD}@graph_db:7687 
     networks:
       - app-network
 
