@@ -1,8 +1,7 @@
 import pytest
-from backend import extract_authors, generate_country_count, process_birthplace
+from backend import extract_authors, process_birthplace
 
 from collections import Counter
-from unittest.mock import patch
 from graph_models import Author
 
 # Sample books data
