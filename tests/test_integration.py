@@ -16,7 +16,7 @@ from setup import setup_db
 @pytest.fixture(scope="module", autouse=True)
 def neo4j_container():
     with Neo4jContainer(
-        image="neo4j:5.20.0", password="password", username="neo4j"
+        image="neo4j:5.20.0", password="blobblob", username="neo4j"
     ) as n4:
         # Map to different local ports to avoid conflicts with container.
         n4.with_bind_ports(
