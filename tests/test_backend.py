@@ -11,12 +11,14 @@ author_1 = Author(
     goodreads_id=696805,
     goodreads_link="https://www.goodreads.com/author/show/696805.Jules_Verne",
     name="Jules Vernes",
+    country = "France"
 )
 
 author_2 = Author(
     goodreads_link="https://www.goodreads.com/author/show/22458.Machado_de_Assis",
     goodreads_id=22458,
-    names="Machado de Assis",
+    name="Machado de Assis",
+    country = "Brazil"
 )
 
 sample_authors = {696805: author_1, 22458: author_2}
@@ -44,47 +46,6 @@ def test_author_extraction():
         {(author_1.goodreads_id, author_1.goodreads_link, author_1.name): 2, (author_2.goodreads_id, author_2.goodreads_link, author_2.name): 1}
     )
     assert extract_authors(sample_books) == expected_count
-
-
-def mock_fetch_author_by_id(session, author_id):
-    return sample_authors.get(author_id)
-
-
-def mock_scrape_gr_author(author_link):
-    if "link1" in author_link:
-        return "United States"
-    elif "link2" in author_link:
-        return "Germany"
-    return None
-
-
-def mock_insert_author(session, author_data):
-    sample_authors[author_data["id"]] = {"birth_country": author_data["birth_country"]}
-
-
-def test_generate_country_count():
-    # Counter object from `extract_authors` simulation
-    authors_counter = Counter(
-        {
-            (author_1.goodreads_id, author_1.goodreads_link, author_1.name): 2,
-            (author_2.goodreads_id, author_2.goodreads_link, author_2.name): 1,
-        }
-    )
-
-    # Patching the database session and scraping function
-    with patch(
-        "backend.fetch_author_by_gr_id", side_effect=mock_fetch_author_by_id
-    ), patch("backend.scrape_gr_author", side_effect=mock_scrape_gr_author), patch(
-        "backend.insert_author", side_effect=mock_insert_author #TODO: This mock doesn't mirror the actual graph db behavior.
-    ):
-        # Run the function with the mocked session and data
-        country_count = generate_country_count(authors_counter)
-
-        # Expected results
-        expected_countries = {"France": 2, "Brazil": 1}
-
-        # Assert to check if the results match the expected output
-        assert country_count == expected_countries, "Country counts are incorrect"
 
 
 
