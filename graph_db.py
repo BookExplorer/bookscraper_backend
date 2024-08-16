@@ -102,7 +102,8 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
         created = True
     else:
         print("This combination for city already exists, so we didn't create it.")
-        city_node =  City.nodes.get(name = geo_dict["city"])
+        #thought: like, isnt this doing another query that in theory is done in the if not above? 
+        city_node =  City.nodes.get(name = geo_dict["city"]) # FIXME: This is inherently problematic, as it assumes only one city with the same name.
         created = False
     return city_node, created
 

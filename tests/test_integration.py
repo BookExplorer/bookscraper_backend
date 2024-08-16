@@ -7,11 +7,12 @@ from graph_db import (
     region_country_exists,
     city_region_exists,
     create_constraints,
-    city_country_exists
+    city_country_exists,
+    create_or_get_city
 )
 from setup import setup_db
-
-
+from graph_models import City
+from neomodel.exceptions import MultipleNodesReturned
 
 @pytest.fixture(scope="module", autouse=True)
 def neo4j_container():
@@ -83,3 +84,22 @@ def test_city_country_creation() -> None:
     assert created_city
     _, _, created_city, _ = create_geo_nodes(geo_dict)
     assert not created_city, "We didn't need to create the city within the country because it already exists."
+
+
+def test_same_name_city() -> None:
+    #TODO: Write a test with two cities of the same name. Nothing should break.
+    repeated_city = "Paris"
+    geo_dict_1 = {"country": "France", "city": repeated_city}
+    geo_dict_2 = {"country": "USA", "region": "Texas", "city": repeated_city}
+    assert not city_country_exists(repeated_city, "France")
+    assert not city_region_exists(repeated_city, "Texas")
+    _, _, created_city, created_region = create_geo_nodes(geo_dict_2)
+    assert created_city and created_region
+    _, _, created_city, _ = create_geo_nodes(geo_dict_1)
+    assert created_city
+    # FIXME: Yeah, this should break for now.
+    # This always raises multiple nodes
+    with pytest.raises(MultipleNodesReturned):
+        City.nodes.get(repeated_city)
+    # This shouldnt:
+    create_or_get_city(geo_dict_1)
