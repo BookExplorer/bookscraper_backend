@@ -1,51 +1,32 @@
-from neomodel import config, db, StructuredNode
-import os
+from neomodel import db, StructuredNode
 from graph_models import Author, City, Country, Region
-from typing import List, Dict
-
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
-config.DATABASE_URL = f"bolt://neo4j:{NEO4J_PASSWORD}@localhost:7687"
+from typing import Dict
 
 
-
-# TODO: Can this be a single function/factory? 
-def city_region_exists(city_name: str, region_name: str) -> bool:
-    query = """
-    MATCH (c:City)-[:WITHIN]->(r:Region {name: $region_name})
-    WHERE c.name = $city_name
+def pair_exists(origin_type: str, origin_name: str, destination_type: str, destination_name: str):
+    query = f"""
+    MATCH (c:{origin_type})-[:WITHIN]->(r:{destination_type} {{name: '{destination_name}'}})
+    WHERE c.name = '{origin_name}'
     RETURN c
     """
-    results, meta = db.cypher_query(
-        query, {"city_name": city_name, "region_name": region_name}
-    )
+    results, meta = db.cypher_query(query)
     return len(results) > 0
+
+
+def city_region_exists(city_name: str, region_name: str) -> bool:
+    return pair_exists("City", city_name, "Region", region_name)
+
 
 def city_country_exists(city_name: str, country_name: str) -> bool:
-    query = """
-    MATCH (c:City)-[:WITHIN]->(r:Country {name: $country_name})
-    WHERE c.name = $city_name
-    RETURN c
-    """
-    results, meta = db.cypher_query(
-        query, {"city_name": city_name, "country_name": country_name}
-    )
-    return len(results) > 0
+    return pair_exists("City", city_name, "Country", country_name)
 
 
-def region_country_exists(country_name: str, region_name: str) -> bool:
-    query = """
-    MATCH (r:Region)-[:WITHIN]->(c:Country {name: $country_name})
-    WHERE r.name = $region_name
-    RETURN r
-    """
-    results, meta = db.cypher_query(
-        query, {"country_name": country_name, "region_name": region_name}
-    )
-    return len(results) > 0
+def region_country_exists(region_name: str, country_name: str) -> bool:
+    return pair_exists("Region", region_name, "Country", country_name)
 
 
 @db.transaction
-def create_geo_nodes(geo_dict: Dict[str, str]) -> City| None:
+def create_geo_nodes(geo_dict: Dict[str, str]) -> tuple[City, Country, bool, bool]| None:
     """Main function for all geographical node insertions/retrievals and connections.
     Expects a dictionary of geographical attributes, 
     will fetch/create the respective node as needed and connect them if applicable.
@@ -57,32 +38,32 @@ def create_geo_nodes(geo_dict: Dict[str, str]) -> City| None:
     Returns:
         City| None: City node for connection with Author node elsewhere.
     """
-    try:
-        # The first node we should create is country, which already has a uniqueness check. All good on this front then.
-        c = Country.get_or_create({"name": geo_dict["country"]})
-        country_node = c[0]
-        # Then, we create the city node.
-        city_node = create_or_get_city(geo_dict)
-        city_node.save()
-        if "region" in geo_dict:
-            region_node = create_or_get_region(geo_dict)
-            region_node.save()
-            if not region_node.country.is_connected(country_node):
-                region_node.country.connect(country_node)
-            
-            # If there is region, then city connects to region:
-            if not city_node.region.is_connected(region_node):
-                city_node.region.connect(region_node)
-        else:
-            # If there is no region, city connects to country:
-            if not city_node.country.is_connected(country_node):
-                city_node.country.connect(country_node)
-        return city_node, country_node
-    except Exception as e:
-        print(e)
+
+    # The first node we should create is country, which already has a uniqueness check. All good on this front then.
+    c = Country.get_or_create({"name": geo_dict["country"]})
+    country_node = c[0]
+    # Then, we create the city node.
+    city_node, created_city_node = create_or_get_city(geo_dict)
+    city_node.save()
+    created_region_node = None
+    if "region" in geo_dict:
+        region_node, created_region_node = create_or_get_region(geo_dict)
+        region_node.save()
+        if not region_node.country.is_connected(country_node):
+            region_node.country.connect(country_node)
+        
+        # If there is region, then city connects to region:
+        if not city_node.region.is_connected(region_node):
+            city_node.region.connect(region_node)
+    else:
+        # If there is no region, city connects to country:
+        if not city_node.country.is_connected(country_node):
+            city_node.country.connect(country_node)
+    return city_node, country_node, created_city_node, created_region_node
 
 
-def create_or_get_region(geo_dict: Dict[str, str]) -> Region:
+
+def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
     """Creates a Region node if and only if it satisfies the validation criteria.
 
     Args:
@@ -92,16 +73,19 @@ def create_or_get_region(geo_dict: Dict[str, str]) -> Region:
         Region: The desired region node.
     """
     # Validate constraints
-    if not region_country_exists(geo_dict["country"], geo_dict["region"]):
+    created = None
+    if not region_country_exists(geo_dict["region"], geo_dict["country"],):
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
         region_node = Region(name = geo_dict["region"])
+        created = True
     else:
-        print(f"The region {geo_dict["region"]} already exists within {geo_dict["country"]} so we didn't create it.")
+        print(f"The region {geo_dict['region']} already exists within {geo_dict['country']} so we didn't create it.")
         region_node =  Region.nodes.get(name = geo_dict["region"])
-    return region_node
+        created = False
+    return region_node, created
 
 
-def create_or_get_city(geo_dict: Dict[str, str]) -> City:
+def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
     """Creates a City node if and only if it satisfies the validation criteria.
 
     Args:
@@ -111,14 +95,24 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> City:
         City: The desired City node.
     """
     # Validate constraints.
-    
-    if not city_country_exists(geo_dict["city"], geo_dict["country"]) and not city_region_exists(geo_dict["city"], geo_dict.get("region", "")):
+    created = None
+    city_country_pair_exists = city_country_exists(geo_dict["city"], geo_dict["country"])
+    city_region_pair_exists = city_region_exists(geo_dict["city"], geo_dict.get("region", ""))
+    if not city_country_pair_exists and not city_region_pair_exists:
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
         city_node = City(name = geo_dict["city"])
+        created = True
     else:
-        print(f"This combination for city already exists, so we didn't create it.")
-        city_node =  City.nodes.get(name = geo_dict["city"])
-    return city_node
+        print("This combination for city already exists, so we didn't create it.")
+        #thought: like, isnt this doing another query that in theory is done in the if not above? 
+        # uh oh, what if both vars are True, there is city in both, which do we pick?
+        # keep in mind city node here will be bubble up, saved, connected, etc.
+        # perhaps this again shows the need for a composite key OR some iso stuff to actually separate stuff man
+        # nvm, there is no iso 3166 for cities, only countries and states, and it does make taiwan = china so.........
+        # new pr this dies
+        city_node =  City.nodes.get(name = geo_dict["city"]) # FIXME: This is inherently problematic, as it assumes only one city with the same name.
+        created = False
+    return city_node, created
 
 
 @db.transaction
@@ -164,10 +158,11 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, str]| Non
     author: Author = create_author(author_dict)
     # Create regions if applicable.:
     if geo_dict:
-        city, country = create_geo_nodes(geo_dict)
+        city, country, _, _ = create_geo_nodes(geo_dict)
         if not author.birth_city.is_connected(city):
             author.birth_city.connect(city)
         return country
+    return None
 
 
 def create_constraints():
@@ -206,6 +201,7 @@ def get_author_place(author: Author, desired_entity: str = "Country") -> Structu
     )
     if results:
         return results[0][0]
+    return None
 
 if __name__ == "__main__":
     create_constraints()

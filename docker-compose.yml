@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   graph_db:
     build:
@@ -11,17 +10,8 @@ services:
       - graphdata:/data
       - graphdata:/logs
     environment:
-      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
-    networks:
-      - app-network
-  db:
-    build:
-      context: .
-      dockerfile: ./docker/db/dockerfile
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+
     networks:
       - app-network
 
@@ -35,10 +25,11 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
       - graph_db
     environment:
-      DATABASE_URL: postgresql://myuser:mysecretpassword@db/bookmap_db
+      DATABASE_URL: bolt://neo4j:${NEO4J_PASSWORD}@graph_db:7687 
+      NEO4J_URI: ${NEO4J_URI}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
     networks:
       - app-network
 
