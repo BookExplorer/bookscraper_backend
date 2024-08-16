@@ -9,6 +9,7 @@ from pydantic import BaseModel, HttpUrl
 from fastapi.middleware.wsgi import WSGIMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 from setup import setup_db
+import logging
 
 class ProfileRequest(BaseModel):
     profile_url: HttpUrl
@@ -16,7 +17,6 @@ class ProfileRequest(BaseModel):
 
 app = FastAPI()
 
-setup_db()
 # Add Werkzeug Profiler Middleware
 app_with_profiler = WSGIMiddleware(
     ProfilerMiddleware(app, restrictions=[30], profile_dir="./profile")
@@ -25,6 +25,7 @@ app_with_profiler = WSGIMiddleware(
 
 @app.post("/process-profile/")
 def profile(request: ProfileRequest):
+    setup_db()
     try:
         books = process_profile(str(request.profile_url))
         cont = extract_authors(books)

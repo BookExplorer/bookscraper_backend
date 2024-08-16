@@ -10,7 +10,7 @@ NEO4J_URI = os.getenv("NEO4J_URI")
 # This being called in test_integration works fine, and neomodel.db has the correct credentials in graph_db.py
 # However, in test_api, neomodel.db has the credentials modified after setup_db has been called.
 # So again, in graph_db.py, neomodel.db will have wrong credentials and will fail any requests. Bizarre.
-
+# This might be because the fastapi decorator throws away the call to setup db!!!!! 
 def setup_db(uri: str | None = None, password: str | None = None):
     """This sets up the DB connection globally for every Neo4J operation using the parameters.
     In contrast with other modules, you DON'T pass sessions/connections to the OGM.
@@ -28,8 +28,10 @@ def setup_db(uri: str | None = None, password: str | None = None):
         # So to assemble it with password, we need to do this.
         uri = urlparse(uri).netloc
     if not password:
+        print(NEO4J_PASSWORD)
         password = NEO4J_PASSWORD
     connection_string = f"bolt://neo4j:{password}@{uri}"
     logging.info(f"[Neo4j Setup] Setting up connection string to {uri}")
     db.set_connection(connection_string)
     logging.info("[Neo4j Setup] Connection done!")
+    return db
