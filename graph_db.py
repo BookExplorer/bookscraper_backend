@@ -96,13 +96,18 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
     """
     # Validate constraints.
     created = None
-    if not city_country_exists(geo_dict["city"], geo_dict["country"]) and not city_region_exists(geo_dict["city"], geo_dict.get("region", "")):
+    city_country_pair_exists = city_country_exists(geo_dict["city"], geo_dict["country"])
+    city_region_pair_exists = city_region_exists(geo_dict["city"], geo_dict.get("region", ""))
+    if not city_country_pair_exists and not city_region_pair_exists:
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
         city_node = City(name = geo_dict["city"])
         created = True
     else:
         print("This combination for city already exists, so we didn't create it.")
         #thought: like, isnt this doing another query that in theory is done in the if not above? 
+        # uh oh, what if both vars are True, there is city in both, which do we pick?
+        # keep in mind city node here will be bubble up, saved, connected, etc.
+        # perhaps this again shows the need for a composite key OR some iso stuff to actually separate stuff man
         city_node =  City.nodes.get(name = geo_dict["city"]) # FIXME: This is inherently problematic, as it assumes only one city with the same name.
         created = False
     return city_node, created
