@@ -28,6 +28,7 @@ class City(StructuredNode):
     name = StringProperty(required=True)
     latitude = FloatProperty()
     longitude = FloatProperty()
+    lat_long_string = StringProperty(unique_index = True)
     # If a region exists
     region = RelationshipTo(Region, "WITHIN", cardinality=ZeroOrOne)
     country = RelationshipTo(Country, "WITHIN", cardinality=ZeroOrOne)
