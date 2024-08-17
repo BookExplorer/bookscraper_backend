@@ -53,9 +53,9 @@ def test_author_extraction():
     [
         (
             "Limoeiro do Norte, Ceará, Brazil",
-            {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte"},
+            {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936},
         ),
-        ("Rome, Italy", {"country": "Italy", "city": "Rome"}),
+        ("Rome, Italy", {"country": "Italy", "city": "Rome", "latitude": 41.8933203, "longitude": 12.4829321}),
         ("", None),
     ],
 )
