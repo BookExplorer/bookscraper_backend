@@ -1,8 +1,7 @@
 from neomodel import (
     StructuredNode,
     StringProperty,
-    IntegerProperty,
-    UniqueIdProperty,
+    FloatProperty,
     RelationshipTo,
     One,
     ZeroOrOne,
@@ -27,6 +26,8 @@ class Region(StructuredNode):
 class City(StructuredNode):
 
     name = StringProperty(required=True)
+    latitude = FloatProperty()
+    longitude = FloatProperty()
     # If a region exists
     region = RelationshipTo(Region, "WITHIN", cardinality=ZeroOrOne)
     country = RelationshipTo(Country, "WITHIN", cardinality=ZeroOrOne)
