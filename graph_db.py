@@ -1,6 +1,6 @@
 from neomodel import db, StructuredNode
 from graph_models import Author, City, Country, Region
-from typing import Dict
+from typing import Dict, Union
 
 
 def pair_exists(origin_type: str, origin_name: str, destination_type: str, destination_name: str):
@@ -26,7 +26,7 @@ def region_country_exists(region_name: str, country_name: str) -> bool:
 
 
 @db.transaction
-def create_geo_nodes(geo_dict: Dict[str, str]) -> tuple[City, Country, bool, bool]| None:
+def create_geo_nodes(geo_dict: Dict[str, Union[str, int]]) -> tuple[City, Country, bool, bool]| None:
     """Main function for all geographical node insertions/retrievals and connections.
     Expects a dictionary of geographical attributes, 
     will fetch/create the respective node as needed and connect them if applicable.
@@ -100,7 +100,10 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
     city_region_pair_exists = city_region_exists(geo_dict["city"], geo_dict.get("region", ""))
     if not city_country_pair_exists and not city_region_pair_exists:
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
-        city_node = City(name = geo_dict["city"])
+        latitude = geo_dict["latitude"]
+        longitude = geo_dict["longitude"]
+        lat_long_string = f"lat:{latitude} long:{longitude}"
+        city_node = City(name = geo_dict["city"], latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
         created = True
     else:
         print("This combination for city already exists, so we didn't create it.")
