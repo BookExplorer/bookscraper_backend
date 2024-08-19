@@ -54,7 +54,7 @@ def test_city_region_creation() -> None:
     country = "Brazil"
     city = "Rio de Janeiro"
     region = "Rio de Janeiro"
-    geo_dict = {"country": country, "region": region, "city": city}
+    geo_dict = {"country": country, "region": region, "city": city, "latitude":-22.9110137, "longitude":-43.2093727}
     # First, we make sure the region doesnt exist within the country
     assert not region_country_exists(region, country), "This region doesn't previously exist within the country"
     # We also want to make sure the city within region is not an existing pair
