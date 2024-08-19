@@ -113,7 +113,7 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
         # perhaps this again shows the need for a composite key OR some iso stuff to actually separate stuff man
         # nvm, there is no iso 3166 for cities, only countries and states, and it does make taiwan = china so.........
         # new pr this dies
-        city_node =  City.nodes.get(name = geo_dict["city"]) # FIXME: This is inherently problematic, as it assumes only one city with the same name.
+        city_node =  City.nodes.get(lat_long_string = lat_long_string) # use lat long string as identifier instead
         created = False
     return city_node, created
 
