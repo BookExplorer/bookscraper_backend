@@ -98,11 +98,11 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
     created = None
     city_country_pair_exists = city_country_exists(geo_dict["city"], geo_dict["country"])
     city_region_pair_exists = city_region_exists(geo_dict["city"], geo_dict.get("region", ""))
+    latitude = geo_dict["latitude"]
+    longitude = geo_dict["longitude"]
+    lat_long_string = f"lat:{latitude} long:{longitude}"
     if not city_country_pair_exists and not city_region_pair_exists:
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
-        latitude = geo_dict["latitude"]
-        longitude = geo_dict["longitude"]
-        lat_long_string = f"lat:{latitude} long:{longitude}"
         city_node = City(name = geo_dict["city"], latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
         created = True
     else:
