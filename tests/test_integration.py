@@ -74,7 +74,7 @@ def test_city_region_creation() -> None:
 def test_city_country_creation() -> None:
     country = "Israel"
     city = "Tel Aviv"
-    geo_dict = {"country": country, "city": city}
+    geo_dict = {"country": country, "city": city, "latitude":32.0852997, "longitude":34.7818064}
     # First, we make sure the region doesnt exist within the country
     # We also want to make sure the city within region is not an existing pair
     assert not city_country_exists(city, country), "This city doesn't previously exist within the country"
