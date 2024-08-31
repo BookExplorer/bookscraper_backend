@@ -1,5 +1,5 @@
 import pytest
-from backend import extract_authors, process_birthplace
+from backend import extract_authors, process_birthplace, get_lat_long_place
 
 from collections import Counter
 from graph_models import Author
@@ -46,7 +46,19 @@ def test_author_extraction():
     )
     assert extract_authors(sample_books) == expected_count
 
-
+@pytest.mark.parametrize(
+        "place, expected",
+                             [
+        (
+            "Limoeiro do Norte, Ceará, Brazil",
+           (-5.1455607, -38.0984936),
+        ),
+        ("Rome, Italy", (41.8933203,12.4829321))
+    ],
+)
+def test_get_lat_long_place(place, expected) -> None:
+    lat_long =  get_lat_long_place(place)
+    assert lat_long == expected
 
 @pytest.mark.parametrize(
     "birthplace, expected",
@@ -57,6 +69,7 @@ def test_author_extraction():
         ),
         ("Rome, Italy", {"country": "Italy", "city": "Rome", "latitude": 41.8933203, "longitude": 12.4829321}),
         ("", None),
+        ("Jerusalem, Mandatory Palestine, Israel", None)
     ],
 )
 def test_birthplace_processing(birthplace, expected):
