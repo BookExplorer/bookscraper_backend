@@ -101,9 +101,16 @@ def process_birthplace(birthplace: str | None) -> Dict[str, Union[str, int]] | N
 def get_lat_long_place(place: str) -> tuple[int, int]:
     geolocator = geopy.geocoders.Nominatim(user_agent="book_explorer")
     location = geolocator.geocode(place, exactly_one= True)
-    latitude = location.latitude
-    longitude = location.longitude
-    return latitude, longitude
+    if location:
+        latitude = location.latitude
+        longitude = location.longitude
+        return latitude, longitude
+
+#TODO: Heres the issue in a nutshell: some birthplaces dont get any response from the above function.
+# A few are for stupid reasons, like adding a mandatory palestine to jerusalem, so maybe we could try something like 
+# using just city, country if there is a region in the middle but nothing is robust enough
+# the question then is what to return as lat long bcuz a default value will mix cities up 
+# given latitude and longitude are floats with a lot of precision, we might just go overkill on those and clean up l8r
 
 
 
