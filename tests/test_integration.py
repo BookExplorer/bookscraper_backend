@@ -13,6 +13,7 @@ from graph_db import (
 from setup import setup_db
 from graph_models import City
 from neomodel.exceptions import MultipleNodesReturned
+from typing import Union, Optional, Dict
 
 @pytest.fixture(scope="module", autouse=True)
 def neo4j_container():
@@ -89,7 +90,7 @@ def test_city_country_creation() -> None:
 def test_same_name_city() -> None:
     #TODO: Write a test with two cities of the same name. Nothing should break.
     repeated_city = "Paris"
-    geo_dict_1 = {"country": "France", "city": repeated_city, "latitude": 48.8588897, "longitude": 2.3200410217200766}
+    geo_dict_1: dict[str, Union[str, float]] = {"country": "France", "city": repeated_city, "latitude": 48.8588897, "longitude": 2.3200410217200766}
     geo_dict_2 = {"country": "USA", "region": "Texas", "city": repeated_city, "latitude": 33.6617962, "longitude": -95.555513}
     assert not city_country_exists(repeated_city, "France")
     assert not city_region_exists(repeated_city, "Texas")
@@ -103,3 +104,7 @@ def test_same_name_city() -> None:
         City.nodes.get(repeated_city)
     # This shouldnt:
     create_or_get_city(geo_dict_1)
+
+def test_same_exact_city() -> None:
+    #todo: write a test trying to see what happens in the case of same lat long strings.
+    pass

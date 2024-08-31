@@ -85,7 +85,7 @@ def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
     return region_node, created
 
 
-def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
+def create_or_get_city(geo_dict: Dict[str, Union[str, float]]) -> tuple[City, bool]:
     """Creates a City node if and only if it satisfies the validation criteria.
 
     Args:
@@ -96,15 +96,21 @@ def create_or_get_city(geo_dict: Dict[str, str]) -> tuple[City, bool]:
     """
     # Validate constraints.
     created = None
-    #TODO: Maybe now that we have lat long, that is all we need. 
-    city_country_pair_exists = city_country_exists(geo_dict["city"], geo_dict["country"])
-    city_region_pair_exists = city_region_exists(geo_dict["city"], geo_dict.get("region", ""))
-    latitude = geo_dict["latitude"]
-    longitude = geo_dict["longitude"]
-    lat_long_string = f"lat:{latitude} long:{longitude}"
+    #TODO: Maybe now that we have lat long, that is all we need.
+    city: str = geo_dict["city"] #type: ignore
+    country: str = geo_dict["country"] #type: ignore
+    city_country_pair_exists = city_country_exists(city, country)
+    city_region_pair_exists = city_region_exists(city, geo_dict.get("region", "")) # type: ignore
+    latitude = geo_dict.get("latitude")
+    longitude = geo_dict.get("longitude")
+    if latitude and longitude:
+        # Then no checks are needed. Lat long string is already a unique id
+        lat_long_string = f"lat:{latitude} long:{longitude}"
+        city_node = City(name = city, latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
+        created = True
     if not city_country_pair_exists and not city_region_pair_exists:
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
-        city_node = City(name = geo_dict["city"], latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
+        city_node = City(name = city, latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
         created = True
     else:
         print("This combination for city already exists, so we didn't create it.")
@@ -143,7 +149,7 @@ def fetch_author_by_gr_id(goodreads_id: int) -> Author:
     return Author.nodes.get_or_none(goodreads_id = goodreads_id)
 
 
-def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, str]| None) -> Country| None:
+def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, Union[str, int]]| None) -> Country| None:
     """Inserts all necessary nodes according to the information received, both the Author node and the geographical nodes.
 
     Args:

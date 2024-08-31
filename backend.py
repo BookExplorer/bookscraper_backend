@@ -77,7 +77,7 @@ def process_country_count(country_count: Dict[str, int]) -> Dict[str, int]:
     return complete_data
 
 
-def process_birthplace(birthplace: str | None) -> Dict[str, Union[str, int]] | None:
+def process_birthplace(birthplace: Optional[str]) -> Optional[Dict[str, Union[str, int]]]:
     """Processes the birthplac string from Goodreads if it exists and returns a dictionary with attributes.
 
     Args:
