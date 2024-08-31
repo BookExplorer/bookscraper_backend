@@ -60,12 +60,12 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
     return country_counter
 
 
-def process_country_count(country_count: Dict[str, int]) -> List[Dict[str, any]]:
+def process_country_count(country_count: Dict[str, int]) -> Dict[str, int]:
     # TODO: Is this necessary?
     # Get a list of all country names using pycountry
     all_countries = [country.name for country in pycountry.countries]
 
-    # Prepare a list to store the results
+    # Prepare a dictionary to store the results
     complete_data = {}
 
     # Fill in the count for each country or set it to 0 if not present
@@ -96,7 +96,7 @@ def process_birthplace(birthplace: str | None) -> Dict[str, Union[str, int]] | N
         geo_dict["latitude"] = latitude
         geo_dict["longitude"] = longitude
         return geo_dict
-
+    return None
 
 def get_lat_long_place(place: str) -> tuple[int, int]:
     geolocator = geopy.geocoders.Nominatim(user_agent="book_explorer")
@@ -104,7 +104,7 @@ def get_lat_long_place(place: str) -> tuple[int, int]:
     if location:
         latitude = location.latitude
         longitude = location.longitude
-        return latitude, longitude
+        return latitude, longitude 
 
 #TODO: Heres the issue in a nutshell: some birthplaces dont get any response from the above function.
 # A few are for stupid reasons, like adding a mandatory palestine to jerusalem, so maybe we could try something like 
