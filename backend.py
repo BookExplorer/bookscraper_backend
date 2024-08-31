@@ -87,15 +87,17 @@ def process_birthplace(birthplace: str | None) -> Dict[str, Union[str, int]] | N
         Dict[str, str] | None: Dictionary with at least country and city geographical attributes.
     """
     if birthplace:
-        latitude, longitude = get_lat_long_place(birthplace)
+        
         split_birthplace = birthplace.split(",")
         geo_dict: Dict[str, Union[str, int]] = {}
         geo_dict["city"] = split_birthplace[0].strip()
         geo_dict["country"] = split_birthplace[-1].strip()
+        lat_long = get_lat_long_place(birthplace)
         if len(split_birthplace) > 2:
             geo_dict["region"] = split_birthplace[1].strip()
-        geo_dict["latitude"] = latitude
-        geo_dict["longitude"] = longitude
+        if lat_long:
+            geo_dict["latitude"] = lat_long[0]
+            geo_dict["longitude"] = lat_long[1]
         return geo_dict
     return None
 
