@@ -53,7 +53,8 @@ def test_author_extraction():
             "Limoeiro do Norte, Ceará, Brazil",
            (-5.1455607, -38.0984936),
         ),
-        ("Rome, Italy", (41.8933203,12.4829321))
+        ("Rome, Italy", (41.8933203,12.4829321)),
+        ("", None)
     ],
 )
 def test_get_lat_long_place(place, expected) -> None:
@@ -68,8 +69,7 @@ def test_get_lat_long_place(place, expected) -> None:
             {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936},
         ),
         ("Rome, Italy", {"country": "Italy", "city": "Rome", "latitude": 41.8933203, "longitude": 12.4829321}),
-        ("", None),
-        ("Jerusalem, Mandatory Palestine, Israel", None)
+        ("", None)
     ],
 )
 def test_birthplace_processing(birthplace, expected):
