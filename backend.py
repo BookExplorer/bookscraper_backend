@@ -1,6 +1,7 @@
 import geopy.geocoders
+from geopy.location import Location
 from goodreads_scraper.scrape import process_profile, scrape_gr_author
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 from collections import Counter
 from graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
 import pycountry
@@ -98,13 +99,14 @@ def process_birthplace(birthplace: str | None) -> Dict[str, Union[str, int]] | N
         return geo_dict
     return None
 
-def get_lat_long_place(place: str) -> tuple[int, int]:
+def get_lat_long_place(place: str) -> Optional[tuple[int, int]]:
     geolocator = geopy.geocoders.Nominatim(user_agent="book_explorer")
-    location = geolocator.geocode(place, exactly_one= True)
+    location: Optional[Location]  = geolocator.geocode(place, exactly_one= True)
     if location:
         latitude = location.latitude
         longitude = location.longitude
-        return latitude, longitude 
+        return latitude, longitude
+    return None
 
 #TODO: Heres the issue in a nutshell: some birthplaces dont get any response from the above function.
 # A few are for stupid reasons, like adding a mandatory palestine to jerusalem, so maybe we could try something like 
