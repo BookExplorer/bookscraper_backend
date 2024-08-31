@@ -39,7 +39,7 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
     Returns:
         Dict[str, int]: Dictionary with the number of books read per country.
     """
-    country_counter = {}
+    country_counter: Dict[str, int] = {}
     for (author_id, author_link, author_name), count in cont.items():
         author_dict = {
             "name": author_name,
@@ -88,7 +88,7 @@ def process_birthplace(birthplace: str | None) -> Dict[str, Union[str, int]] | N
     if birthplace:
         latitude, longitude = get_lat_long_place(birthplace)
         split_birthplace = birthplace.split(",")
-        geo_dict = {}
+        geo_dict: Dict[str, Union[str, int]] = {}
         geo_dict["city"] = split_birthplace[0].strip()
         geo_dict["country"] = split_birthplace[-1].strip()
         if len(split_birthplace) > 2:
