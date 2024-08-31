@@ -63,7 +63,7 @@ def create_geo_nodes(geo_dict: Dict[str, Union[str, int]]) -> tuple[City, Countr
 
 
 
-def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
+def create_or_get_region(geo_dict: Dict[str, str | float]) -> tuple[Region, bool]:
     """Creates a Region node if and only if it satisfies the validation criteria.
 
     Args:
@@ -74,7 +74,7 @@ def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
     """
     # Validate constraints
     created = None
-    if not region_country_exists(geo_dict["region"], geo_dict["country"],):
+    if not region_country_exists(geo_dict["region"], geo_dict["country"]): #type: ignore
         # If this doesn't exist, we shoud create it. But we will connect and then save!!
         region_node = Region(name = geo_dict["region"])
         created = True
@@ -85,7 +85,7 @@ def create_or_get_region(geo_dict: Dict[str, str]) -> tuple[Region, bool]:
     return region_node, created
 
 
-def create_or_get_city(geo_dict: Dict[str, Union[str, float]]) -> tuple[City, bool]:
+def create_or_get_city(geo_dict: Dict[str, str | float]) -> tuple[City, bool]:
     """Creates a City node if and only if it satisfies the validation criteria.
 
     Args:
@@ -149,7 +149,7 @@ def fetch_author_by_gr_id(goodreads_id: int) -> Author:
     return Author.nodes.get_or_none(goodreads_id = goodreads_id)
 
 
-def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str, Union[str, int]]| None) -> Country| None:
+def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str,str | float]| None) -> Country| None:
     """Inserts all necessary nodes according to the information received, both the Author node and the geographical nodes.
 
     Args:
