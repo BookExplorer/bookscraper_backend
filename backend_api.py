@@ -9,6 +9,7 @@ from pydantic import BaseModel, HttpUrl
 from fastapi.middleware.wsgi import WSGIMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 from setup import setup_db
+from graph_db import create_constraints
 import logging
 
 class ProfileRequest(BaseModel):
@@ -25,7 +26,9 @@ app_with_profiler = WSGIMiddleware(
 
 @app.post("/process-profile/")
 def profile(request: ProfileRequest):
+    #FIXME: Why in gods green earth does this run on request am i stupid
     setup_db()
+    create_constraints()
     try:
         books = process_profile(str(request.profile_url))
         cont = extract_authors(books)
