@@ -13,8 +13,7 @@ from graph_db import (
 from setup import setup_db
 from graph_models import City
 from neomodel.exceptions import MultipleNodesReturned
-
-
+from neomodel import db
 
 @pytest.fixture(scope="module", autouse=True)
 def neo4j_container():
@@ -35,11 +34,12 @@ def neo4j_container():
         yield n4
 
 
-
-
-
-# TODO: Add cleanup fixture and something just for good measure checking the db we connect to starts empty here, if not it's not the testcontainer
-
+@pytest.fixture(scope="function", autouse=True)
+def cleanup_data():
+    db.cypher_query(
+        """MATCH (n)
+        DETACH DELETE n""")
+    
 
 def test_real_small_shelf():
     # Keep in mind this very small shelf might not have repeated geo nodes and is thus not an extensive test.
@@ -118,8 +118,8 @@ def test_same_exact_city_with_lat() -> None:
     assert not created_city_node
 
 def test_same_exact_city_without_lat() -> None:
-    country = "Israel"
-    city = "Tel Aviv"
+    country = "Iran"
+    city = "Tehran"
     geo_dict = {"country": country, "city": city}
     assert not city_country_exists(city, country)
     city_node, country_node, created_city_node, created_region_node  = create_geo_nodes(geo_dict)
