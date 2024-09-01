@@ -13,7 +13,8 @@ from graph_db import (
 from setup import setup_db
 from graph_models import City
 from neomodel.exceptions import MultipleNodesReturned
-from typing import Union, Optional, Dict
+
+
 
 @pytest.fixture(scope="module", autouse=True)
 def neo4j_container():
@@ -32,6 +33,7 @@ def neo4j_container():
         setup_db(neo4j_uri, neo4j_password)
         create_constraints()
         yield n4
+
 
 
 
@@ -89,8 +91,8 @@ def test_city_country_creation() -> None:
 
 def test_same_name_city() -> None:
     repeated_city = "Paris"
-    geo_dict_1: dict[str, Union[str, float]] = {"country": "France", "city": repeated_city, "latitude": 48.8588897, "longitude": 2.3200410217200766}
-    geo_dict_2 = {"country": "USA", "region": "Texas", "city": repeated_city, "latitude": 33.6617962, "longitude": -95.555513}
+    geo_dict_1: dict[str, str |float] = {"country": "France", "city": repeated_city, "latitude": 48.8588897, "longitude": 2.3200410217200766}
+    geo_dict_2: dict[str, str |float] = {"country": "USA", "region": "Texas", "city": repeated_city, "latitude": 33.6617962, "longitude": -95.555513}
     assert not city_country_exists(repeated_city, "France")
     assert not city_region_exists(repeated_city, "Texas")
     _, _, created_city, created_region = create_geo_nodes(geo_dict_2)

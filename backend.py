@@ -1,7 +1,7 @@
 import geopy.geocoders
 from geopy.location import Location
 from goodreads_scraper.scrape import process_profile, scrape_gr_author
-from typing import Dict, List, Union, Optional
+from typing import Dict, List
 from collections import Counter
 from graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
 import pycountry
@@ -77,7 +77,7 @@ def process_country_count(country_count: Dict[str, int]) -> Dict[str, int]:
     return complete_data
 
 
-def process_birthplace(birthplace: Optional[str]) -> Optional[Dict[str, Union[str, int]]]:
+def process_birthplace(birthplace: str | None) -> Dict[str, str | float]| None:
     """Processes the birthplac string from Goodreads if it exists and returns a dictionary with attributes.
 
     Args:
@@ -89,7 +89,7 @@ def process_birthplace(birthplace: Optional[str]) -> Optional[Dict[str, Union[st
     if birthplace:
         
         split_birthplace = birthplace.split(",")
-        geo_dict: Dict[str, Union[str, int]] = {}
+        geo_dict: Dict[str, str| float] = {}
         geo_dict["city"] = split_birthplace[0].strip()
         geo_dict["country"] = split_birthplace[-1].strip()
         lat_long = get_lat_long_place(birthplace)
@@ -101,9 +101,9 @@ def process_birthplace(birthplace: Optional[str]) -> Optional[Dict[str, Union[st
         return geo_dict
     return None
 
-def get_lat_long_place(place: str) -> Optional[tuple[int, int]]:
+def get_lat_long_place(place: str) -> tuple[int, int]| None:
     geolocator = geopy.geocoders.Nominatim(user_agent="book_explorer")
-    location: Optional[Location]  = geolocator.geocode(place, exactly_one= True)
+    location: Location | None  = geolocator.geocode(place, exactly_one= True)
     if location:
         latitude = location.latitude
         longitude = location.longitude
