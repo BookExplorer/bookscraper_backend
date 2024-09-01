@@ -88,7 +88,6 @@ def test_city_country_creation() -> None:
 
 
 def test_same_name_city() -> None:
-    #TODO: Write a test with two cities of the same name. Nothing should break.
     repeated_city = "Paris"
     geo_dict_1: dict[str, Union[str, float]] = {"country": "France", "city": repeated_city, "latitude": 48.8588897, "longitude": 2.3200410217200766}
     geo_dict_2 = {"country": "USA", "region": "Texas", "city": repeated_city, "latitude": 33.6617962, "longitude": -95.555513}
@@ -105,6 +104,24 @@ def test_same_name_city() -> None:
     # This shouldnt:
     create_or_get_city(geo_dict_1)
 
-def test_same_exact_city() -> None:
-    #todo: write a test trying to see what happens in the case of same lat long strings.
-    pass
+def test_same_exact_city_with_lat() -> None:
+    country = "Israel"
+    city = "Tel Aviv"
+    geo_dict = {"country": country, "city": city, "latitude":32.0852997, "longitude":34.7818064}
+    assert not city_country_exists(city, country)
+    city_node, country_node, created_city_node, created_region_node  = create_geo_nodes(geo_dict)
+    assert city_country_exists(city, country)
+    assert created_city_node
+    city_node, country_node, created_city_node, created_region_node = create_geo_nodes(geo_dict)
+    assert not created_city_node
+
+def test_same_exact_city_without_lat() -> None:
+    country = "Israel"
+    city = "Tel Aviv"
+    geo_dict = {"country": country, "city": city}
+    assert not city_country_exists(city, country)
+    city_node, country_node, created_city_node, created_region_node  = create_geo_nodes(geo_dict)
+    assert city_country_exists(city, country)
+    assert created_city_node
+    city_node, country_node, created_city_node, created_region_node = create_geo_nodes(geo_dict)
+    assert not created_city_node

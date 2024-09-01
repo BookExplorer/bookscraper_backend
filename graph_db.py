@@ -1,17 +1,21 @@
 from neomodel import db, StructuredNode
 from graph_models import Author, City, Country, Region
-from typing import Dict, Union
+from typing import Dict
 
 
-def pair_exists(origin_type: str, origin_name: str, destination_type: str, destination_name: str):
+
+def query_pair(origin_type: str, origin_name: str, destination_type: str, destination_name: str) -> list[list[StructuredNode]]:
     query = f"""
     MATCH (c:{origin_type})-[:WITHIN]->(r:{destination_type} {{name: '{destination_name}'}})
     WHERE c.name = '{origin_name}'
     RETURN c
     """
-    results, meta = db.cypher_query(query)
-    return len(results) > 0
+    results, _ = db.cypher_query(query, resolve_objects=True)
+    return results
 
+def pair_exists(origin_type: str, origin_name: str, destination_type: str, destination_name: str) -> bool:
+    results = query_pair(origin_type, origin_name, destination_type, destination_name)
+    return len(results) > 0
 
 def city_region_exists(city_name: str, region_name: str) -> bool:
     return pair_exists("City", city_name, "Region", region_name)
@@ -26,7 +30,7 @@ def region_country_exists(region_name: str, country_name: str) -> bool:
 
 
 @db.transaction
-def create_geo_nodes(geo_dict: Dict[str, Union[str, int]]) -> tuple[City, Country, bool, bool]| None:
+def create_geo_nodes(geo_dict: Dict[str, str | float]) -> tuple[City, Country, bool | None, bool| None]:
     """Main function for all geographical node insertions/retrievals and connections.
     Expects a dictionary of geographical attributes, 
     will fetch/create the respective node as needed and connect them if applicable.
@@ -41,7 +45,7 @@ def create_geo_nodes(geo_dict: Dict[str, Union[str, int]]) -> tuple[City, Countr
 
     # The first node we should create is country, which already has a uniqueness check. All good on this front then.
     c = Country.get_or_create({"name": geo_dict["country"]})
-    country_node = c[0]
+    country_node: Country = c[0]
     # Then, we create the city node.
     city_node, created_city_node = create_or_get_city(geo_dict)
     city_node.save()
@@ -95,27 +99,37 @@ def create_or_get_city(geo_dict: Dict[str, str | float]) -> tuple[City, bool]:
         City: The desired City node.
     """
     # Validate constraints.
-    created = None
     #TODO: Maybe now that we have lat long, that is all we need.
     city: str = geo_dict["city"] #type: ignore
     country: str = geo_dict["country"] #type: ignore
     city_country_pair_exists = city_country_exists(city, country)
-    city_region_pair_exists = city_region_exists(city, geo_dict.get("region", "")) # type: ignore
+    region: str = geo_dict.get("region", "") #type: ignore
+    city_region_pair_exists = city_region_exists(city, region) # type: ignore
     latitude = geo_dict.get("latitude")
     longitude = geo_dict.get("longitude")
     if latitude and longitude:
         # Then no checks are needed. Lat long string is already a unique id
         lat_long_string = f"lat:{latitude} long:{longitude}"
-        city_node = City(name = city, latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
-        created = True
-    if not city_country_pair_exists and not city_region_pair_exists:
-        # If this doesn't exist, we shoud create it. But we will connect and then save!!
-        city_node = City(name = city, latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
-        created = True
+        city_node: City = City.nodes.get_or_none(lat_long_string=lat_long_string)
+        if not city_node:
+            city_node = City(name = city, latitude = latitude, longitude = longitude, lat_long_string = lat_long_string)
+            created = True
+        else:
+            created = False
     else:
-        print("This combination for city already exists, so we didn't create it.")
-        city_node =  City.nodes.get(lat_long_string = lat_long_string) # use lat long string as identifier instead
-        created = False
+        if not city_country_pair_exists and not city_region_pair_exists:
+            # If this doesn't exist, we shoud create it. But we will connect and then save!!
+            city_node = City(name = city)
+            created = True
+        else:
+            # If we dont have latitudes AND the city does exist
+            print("This combination for city already exists, so we didn't create it.")
+            # And here WE AGAIN have the same problem. 
+            if city_region_pair_exists:
+                city_node: City = query_pair("City", city, "Region", region)[0][0] #type: ignore
+            else:
+                city_node: City = query_pair("City", city, "Country", country)[0][0] #type: ignore
+            created = False
     return city_node, created
 
 
@@ -174,7 +188,8 @@ def create_constraints():
     """
     queries = [
         "CREATE CONSTRAINT country_name FOR (country:Country) REQUIRE country.name IS UNIQUE",
-        "CREATE CONSTRAINT author_gr_id FOR (author:Author) REQUIRE author.goodreads_id IS UNIQUE"
+        "CREATE CONSTRAINT author_gr_id FOR (author:Author) REQUIRE author.goodreads_id IS UNIQUE",
+        "CREATE CONSTRAINT city_lat_long_string FOR (city:City) REQUIRE city.lat_long_string IS UNIQUE"
     ]
     for query in queries:
         try:
