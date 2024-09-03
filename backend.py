@@ -110,13 +110,6 @@ def get_lat_long_place(place: str) -> tuple[int, int]| None:
         return latitude, longitude
     return None
 
-#TODO: Heres the issue in a nutshell: some birthplaces dont get any response from the above function.
-# A few are for stupid reasons, like adding a mandatory palestine to jerusalem, so maybe we could try something like 
-# using just city, country if there is a region in the middle but nothing is robust enough
-# the question then is what to return as lat long bcuz a default value will mix cities up 
-# given latitude and longitude are floats with a lot of precision, we might just go overkill on those and clean up l8r
-
-
 
 if __name__ == "__main__":
     user_profile = "https://www.goodreads.com/user/show/71341746-tamir-einhorn-salem"
