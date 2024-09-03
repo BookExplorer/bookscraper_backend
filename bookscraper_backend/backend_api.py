@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from backend import (
+from bookscraper_backend.backend import (
     process_country_count,
     extract_authors,
     generate_country_count,
@@ -8,9 +8,9 @@ from goodreads_scraper.scrape import process_profile
 from pydantic import BaseModel, HttpUrl
 from fastapi.middleware.wsgi import WSGIMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
-from setup import setup_db
+from bookscraper_backend.setup import setup_db
 from graph_db import create_constraints
-import logging
+
 
 class ProfileRequest(BaseModel):
     profile_url: HttpUrl

@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from backend_api import app
+from bookscraper_backend.backend_api import app
 
 client = TestClient(app)
 
