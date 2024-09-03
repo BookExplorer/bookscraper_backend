@@ -1,5 +1,5 @@
 import pytest
-from backend import extract_authors, process_birthplace
+from backend import extract_authors, process_birthplace, get_lat_long_place
 
 from collections import Counter
 from graph_models import Author
@@ -46,17 +46,41 @@ def test_author_extraction():
     )
     assert extract_authors(sample_books) == expected_count
 
+@pytest.mark.parametrize(
+        "place, expected",
+                             [
+        (
+            "Limoeiro do Norte, Ceará, Brazil",
+           (-5.1455607, -38.0984936),
+        ),
+        ("Rome, Italy", (41.8933203,12.4829321)),
+        ("", None),
+        ("suhdfusdhfsudh, bumfuck, nedjsai", None),
+        ("Jerusalem, Mandatory Palestine, Israel", None)
 
+    ],
+
+)
+#TODO: Add the breaking weird place to both lat long place and birthplace extraction testing. 
+# This ensures sensible defaults for everything.
+# IF we decide that lat long place will try without region name, create something that is always broken as a test as well pls
+# no sense in not having sensible defaults if everything else fails, right
+
+def test_get_lat_long_place(place, expected) -> None:
+    lat_long =  get_lat_long_place(place)
+    assert lat_long == expected
 
 @pytest.mark.parametrize(
     "birthplace, expected",
     [
         (
             "Limoeiro do Norte, Ceará, Brazil",
-            {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte"},
+            {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936},
         ),
-        ("Rome, Italy", {"country": "Italy", "city": "Rome"}),
+        ("Rome, Italy", {"country": "Italy", "city": "Rome", "latitude": 41.8933203, "longitude": 12.4829321}),
         ("", None),
+        ("suhdfusdhfsudh, bumfuck, nedjsai", {"country": "nedjsai", "region": "bumfuck", "city": "suhdfusdhfsudh"})
+
     ],
 )
 def test_birthplace_processing(birthplace, expected):
