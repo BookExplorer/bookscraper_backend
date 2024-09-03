@@ -10,7 +10,7 @@ from graph_db import (
     city_country_exists,
     create_or_get_city
 )
-from setup import setup_db
+from bookscraper_backend.setup import setup_db
 from graph_models import City
 from neomodel.exceptions import MultipleNodesReturned
 from neomodel import db
