@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from backend import (
+from bookscraper_backend.backend import (
     process_country_count,
     extract_authors,
     generate_country_count,

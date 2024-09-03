@@ -1,5 +1,5 @@
 import pytest
-from backend import extract_authors, process_birthplace, get_lat_long_place
+from bookscraper_backend.backend import extract_authors, process_birthplace, get_lat_long_place
 
 from collections import Counter
 from graph_models import Author

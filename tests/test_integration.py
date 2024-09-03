@@ -1,6 +1,6 @@
 from testcontainers.neo4j import Neo4jContainer
 import pytest
-from backend import extract_authors, generate_country_count
+from bookscraper_backend.backend import extract_authors, generate_country_count
 from goodreads_scraper.scrape import scrape_shelf
 from graph_db import (
     create_geo_nodes,
