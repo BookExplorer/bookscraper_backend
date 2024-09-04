@@ -17,7 +17,8 @@ class ProfileRequest(BaseModel):
 
 
 app = FastAPI()
-
+setup_db()
+create_constraints()
 # Add Werkzeug Profiler Middleware
 app_with_profiler = WSGIMiddleware(
     ProfilerMiddleware(app, restrictions=[30], profile_dir="./profile")
@@ -27,8 +28,7 @@ app_with_profiler = WSGIMiddleware(
 @app.post("/process-profile/")
 def profile(request: ProfileRequest):
     #FIXME: Why in gods green earth does this run on request am i stupid
-    setup_db()
-    create_constraints()
+
     try:
         books = process_profile(str(request.profile_url))
         cont = extract_authors(books)
