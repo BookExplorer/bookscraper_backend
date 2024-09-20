@@ -34,5 +34,5 @@ def setup_db(uri: str | None = None, password: str | None = None):
     logging.info(f"[Neo4j Setup] Setting up connection string to {uri}")
     db.set_connection(connection_string)
     logging.info("[Neo4j Setup] Connection done!")
-    config.DATABASE_URL = connection_string
+    config.DATABASE_URL = connection_string # Neomodel needs to know the proper connection string internally.
     return db
