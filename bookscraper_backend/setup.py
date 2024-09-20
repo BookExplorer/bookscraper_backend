@@ -1,5 +1,5 @@
 import os
-from neomodel import db
+from neomodel import db, config
 from urllib.parse import urlparse
 import logging
 
@@ -34,4 +34,5 @@ def setup_db(uri: str | None = None, password: str | None = None):
     logging.info(f"[Neo4j Setup] Setting up connection string to {uri}")
     db.set_connection(connection_string)
     logging.info("[Neo4j Setup] Connection done!")
+    config.DATABASE_URL = connection_string
     return db
