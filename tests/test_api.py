@@ -13,3 +13,14 @@ def test_profile_endpoint():
     )
 
     assert response.status_code == 200
+
+
+def test_profile_endpoint_bad_url():
+    response = client.post(
+        "/process-profile/",
+        json={
+            "profile_url": "sdfdsd"
+        },
+    )
+
+    assert response.status_code == 422
