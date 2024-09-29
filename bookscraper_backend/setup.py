@@ -23,6 +23,7 @@ def setup_db(uri: str | None = None, password: str | None = None):
     """
     if not uri:
         uri = NEO4J_URI
+        print(f"No uri passed, so using env variable: {uri}")
     else:
         # The URI from Testcontainers comes like: bolt://neo4j@localhost:port
         # So to assemble it with password, we need to do this.
@@ -31,8 +32,8 @@ def setup_db(uri: str | None = None, password: str | None = None):
         print("Using env variable as password.")
         password = NEO4J_PASSWORD
     connection_string = f"bolt://neo4j:{password}@{uri}"
-    logging.info(f"[Neo4j Setup] Setting up connection string to {uri}")
+    print(f"[Neo4j Setup] Setting up connection string to {uri}")
     db.set_connection(connection_string)
-    logging.info("[Neo4j Setup] Connection done!")
+    print("[Neo4j Setup] Connection done!")
     config.DATABASE_URL = connection_string # Neomodel needs to know the proper connection string internally.
     return db
