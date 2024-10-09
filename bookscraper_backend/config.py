@@ -1,1 +1,0 @@
-#TODO: Create some sort of config class so that we can change stuff according to env?
