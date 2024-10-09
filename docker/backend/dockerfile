@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y wget gnupg2 \
 # Copy the rest of your application's code to the container
 COPY . /app
 
-# Command to run when starting the container
-CMD uvicorn bookscraper_backend.backend_api:app_with_profiler --host 0.0.0.0 --port 8000
+# # Command to run when starting the container
+CMD uvicorn bookscraper_backend.backend_api:app --host 0.0.0.0 --port 8000
 
 ENV CHROME_OPTS="--no-sandbox --disable-dev-shm-usage --headless --disable-gpu"

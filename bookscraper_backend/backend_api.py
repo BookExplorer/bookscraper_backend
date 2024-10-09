@@ -10,15 +10,19 @@ from fastapi.middleware.wsgi import WSGIMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 from bookscraper_backend.setup import setup_db
 from graph_db import create_constraints
-
+from contextlib import asynccontextmanager
 
 class ProfileRequest(BaseModel):
     profile_url: HttpUrl
 
 
-app = FastAPI()
-setup_db()
-create_constraints()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    setup_db()
+    create_constraints()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 # Add Werkzeug Profiler Middleware
 app_with_profiler = WSGIMiddleware(
     ProfilerMiddleware(app, restrictions=[30], profile_dir="./profile")
@@ -27,8 +31,6 @@ app_with_profiler = WSGIMiddleware(
 
 @app.post("/process-profile/")
 def profile(request: ProfileRequest):
-    #FIXME: Why in gods green earth does this run on request am i stupid
-
     try:
         books = process_profile(str(request.profile_url))
         cont = extract_authors(books)
