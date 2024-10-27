@@ -3,8 +3,7 @@ from neomodel import db, config
 from urllib.parse import urlparse
 import logging
 
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
-NEO4J_URI = os.getenv("NEO4J_URI")
+
 
 
 def setup_db(uri: str | None = None, password: str | None = None):
@@ -17,8 +16,10 @@ def setup_db(uri: str | None = None, password: str | None = None):
         uri (str | None): URI for Neo4J.
         password (str | None): Password for Neo4j.
     """
+    neo4j_password = os.getenv("NEO4J_PASSWORD")
+    neo4j_uri = os.getenv("NEO4J_URI")
     if not uri:
-        uri = NEO4J_URI
+        uri = neo4j_uri
         print(f"No uri passed, so using env variable: {uri}")
     else:
         # The URI from Testcontainers comes like: bolt://neo4j@localhost:port
@@ -26,7 +27,7 @@ def setup_db(uri: str | None = None, password: str | None = None):
         uri = urlparse(uri).netloc
     if not password:
         print("Using env variable as password.")
-        password = NEO4J_PASSWORD
+        password = neo4j_password
     connection_string = f"bolt://neo4j:{password}@{uri}"
     print(f"[Neo4j Setup] Setting up connection string to {uri}")
     db.set_connection(connection_string)
