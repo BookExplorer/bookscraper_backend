@@ -11,7 +11,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 from bookscraper_backend.setup import setup_db
 from graph_db import create_constraints
 from contextlib import asynccontextmanager
-
+from logger import logger
 class ProfileRequest(BaseModel):
     profile_url: HttpUrl
 
@@ -38,5 +38,5 @@ def profile(request: ProfileRequest):
         full_count = process_country_count(cc)
         return {"data": full_count}
     except Exception as e:
-        print(str(e))
+        logger.exception(str(e))
         raise HTTPException(status_code=500, detail=str(e))
