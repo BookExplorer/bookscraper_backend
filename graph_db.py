@@ -1,8 +1,7 @@
 from neomodel import db, StructuredNode
 from graph_models import Author, City, Country, Region
 from typing import Dict
-
-
+from logger import logger
 
 def query_pair(origin_type: str, origin_name: str, destination_type: str, destination_name: str) -> list[list[StructuredNode]]:
     query = f"""
@@ -83,7 +82,7 @@ def create_or_get_region(geo_dict: Dict[str, str | float]) -> tuple[Region, bool
         region_node = Region(name = geo_dict["region"])
         created = True
     else:
-        print(f"The region {geo_dict['region']} already exists within {geo_dict['country']} so we didn't create it.")
+        logger.debug(f"The region {geo_dict['region']} already exists within {geo_dict['country']} so we didn't create it.")
         region_node =  Region.nodes.get(name = geo_dict["region"])
         created = False
     return region_node, created
@@ -123,7 +122,7 @@ def create_or_get_city(geo_dict: Dict[str, str | float]) -> tuple[City, bool]:
             created = True
         else:
             # If we dont have latitudes AND the city does exist
-            print("This combination for city already exists, so we didn't create it.")
+            logger.debug("This combination for city already exists, so we didn't create it.")
             # And here WE AGAIN have the same problem. 
             if city_region_pair_exists:
                 city_node: City = query_pair("City", city, "Region", region)[0][0] #type: ignore
@@ -195,7 +194,7 @@ def create_constraints():
         try:
             db.cypher_query(query)
         except Exception as e:
-            print(f"Error creating constraint: {e}")
+            logger.debug(f"Error creating constraint: {e}")
 
 
 def get_author_place(author: Author, desired_entity: str = "Country") -> StructuredNode | None:
