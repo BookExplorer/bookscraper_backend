@@ -1,5 +1,5 @@
 import pytest
-from bookscraper_backend.backend import extract_authors, process_birthplace, get_lat_long_place
+from bookscraper_backend.backend import extract_authors, process_birthplace, get_lat_long_place, process_country_count
 
 from collections import Counter
 from graph_models import Author
@@ -86,3 +86,12 @@ def test_get_lat_long_place(place, expected) -> None:
 def test_birthplace_processing(birthplace, expected):
     result = process_birthplace(birthplace)
     assert result == expected
+
+
+def test_process_country_count():
+    country_count = {"Brazil": 2, "Argentina": 1}
+    result = process_country_count(country_count)
+    for country in country_count:
+        assert result.pop(country) == country_count[country]
+    res_vals = list(result.values())
+    assert res_vals == [0] * len(res_vals)
