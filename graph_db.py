@@ -159,6 +159,7 @@ def fetch_author_by_gr_id(goodreads_id: int) -> Author:
     Returns:
         Author: Author node with that Goodreads id.
     """
+    logger.debug(f"[graph_db] Looking for author {goodreads_id}")
     return Author.nodes.get_or_none(goodreads_id = goodreads_id)
 
 
@@ -173,10 +174,12 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str,str | floa
         Country| None: If there is a geographical dictionary, return the created/existing Country node.
     """
     author: Author = create_author(author_dict)
+    logger.info("[graph_db] Created author!")
     # Create regions if applicable.:
     if geo_dict:
         city, country, _, _ = create_geo_nodes(geo_dict)
         if not author.birth_city.is_connected(city):
+            logger.info("Author wasn't connected to birth city, connecting! ")
             author.birth_city.connect(city)
         return country
     return None
