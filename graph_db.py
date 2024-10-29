@@ -48,20 +48,24 @@ def create_geo_nodes(geo_dict: Dict[str, str | float]) -> tuple[City, Country, b
     # Then, we create the city node.
     city_node, created_city_node = create_or_get_city(geo_dict)
     city_node.save()
+    logger.debug(f"[graph_db] City {geo_dict["city"]} creation: {created_city_node}")
     created_region_node = None
     if "region" in geo_dict:
         region_node, created_region_node = create_or_get_region(geo_dict)
+        logger.debug(f"[graph_db] Region {geo_dict["region"]} creation: {created_city_node}")
         region_node.save()
         if not region_node.country.is_connected(country_node):
             region_node.country.connect(country_node)
-        
+            logger.debug(f"[graph_db] {geo_dict['region']} wasn't connected to {geo_dict['country']}, connection done.")
         # If there is region, then city connects to region:
         if not city_node.region.is_connected(region_node):
             city_node.region.connect(region_node)
+            logger.debug(f"[graph_db] {geo_dict['city']} wasn't connected to {geo_dict['region']}, connection done.")
     else:
         # If there is no region, city connects to country:
         if not city_node.country.is_connected(country_node):
             city_node.country.connect(country_node)
+            logger.debug(f"[graph_db] {geo_dict['city']} wasn't connected to {geo_dict['country']}, connection done.")
     return city_node, country_node, created_city_node, created_region_node
 
 
@@ -179,7 +183,7 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str,str | floa
     if geo_dict:
         city, country, _, _ = create_geo_nodes(geo_dict)
         if not author.birth_city.is_connected(city):
-            logger.info("Author wasn't connected to birth city, connecting! ")
+            logger.debug("Author wasn't connected to birth city, connecting! ")
             author.birth_city.connect(city)
         return country
     return None
