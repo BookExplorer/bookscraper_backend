@@ -558,9 +558,9 @@ validators = "^0.22.0"
 
 [package.source]
 type = "git"
-url = "https://github.com/tamireinhorn/Goodreads-Scraper.git"
-reference = "main"
-resolved_reference = "9e27e01e774ee3614ea026c26810cd1ba53c076b"
+url = "https://github.com/BookExplorer/Goodreads-Scraper"
+reference = "HEAD"
+resolved_reference = "c83bbadf0c5576564d215dbb3a2a80170be8e5f4"
 
 [[package]]
 name = "greenlet"
@@ -2209,4 +2209,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "75a571272960789be1dba31b917ea3e4fe57e7f1c03a07dbbbbd69fcbee31b76"
+content-hash = "bba6cb76f4c47c820e007438a8c6c759f2145836569b86da7c7c7bf6a52d704d"
