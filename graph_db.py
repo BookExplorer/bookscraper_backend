@@ -48,24 +48,24 @@ def create_geo_nodes(geo_dict: Dict[str, str | float]) -> tuple[City, Country, b
     # Then, we create the city node.
     city_node, created_city_node = create_or_get_city(geo_dict)
     city_node.save()
-    logger.debug(f"[graph_db] City {geo_dict["city"]} creation: {created_city_node}")
+    logger.debug("[graph_db] City %s creation: %s", geo_dict['city'], created_city_node)
     created_region_node = None
     if "region" in geo_dict:
         region_node, created_region_node = create_or_get_region(geo_dict)
-        logger.debug(f"[graph_db] Region {geo_dict["region"]} creation: {created_city_node}")
+        logger.debug("[graph_db] Region %s creation: %s", geo_dict['region'], created_region_node)
         region_node.save()
         if not region_node.country.is_connected(country_node):
             region_node.country.connect(country_node)
-            logger.debug(f"[graph_db] {geo_dict['region']} wasn't connected to {geo_dict['country']}, connection done.")
+            logger.debug("[graph_db] %s wasn't connected to %s, connection done.", geo_dict['region'], geo_dict['country'])
         # If there is region, then city connects to region:
         if not city_node.region.is_connected(region_node):
             city_node.region.connect(region_node)
-            logger.debug(f"[graph_db] {geo_dict['city']} wasn't connected to {geo_dict['region']}, connection done.")
+            logger.debug("[graph_db] %s wasn't connected to %s, connection done.", geo_dict['city'], geo_dict['region'])
     else:
         # If there is no region, city connects to country:
         if not city_node.country.is_connected(country_node):
             city_node.country.connect(country_node)
-            logger.debug(f"[graph_db] {geo_dict['city']} wasn't connected to {geo_dict['country']}, connection done.")
+            logger.debug("[graph_db] %s wasn't connected to %s, connection done.", geo_dict['city'], geo_dict['country'])
     return city_node, country_node, created_city_node, created_region_node
 
 
