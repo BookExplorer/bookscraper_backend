@@ -8,6 +8,7 @@ import pycountry
 import cProfile
 import pstats
 import geopy
+from logger import logger
 
 profiler = cProfile.Profile()
 profiler.enable()
@@ -49,11 +50,16 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
         }
         author = fetch_author_by_gr_id(author_id)
         if author:
+            logger.debug(f"[backend] Found {author_id} in database.")
             country = get_author_place(author, "Country")
         else:
+            logger.debug(f"[backend] Didn't find {author_id} in database, going to scrape from GR.")
             birthplace, _ = scrape_gr_author(author_link)  # Scrape the birthplace
+            logger.debug("[backend] Scraped author.")
             geo_dict = process_birthplace(birthplace)
+            logger.debug("[backend] Processed author birthplace.")
             country = insert_everything(author_dict, geo_dict)
+            logger.debug("[backend] Inserted everything on db.")
         if country and country.name in country_counter:
             country_counter[country.name] += count
         elif country:

@@ -99,7 +99,6 @@ def test_same_name_city() -> None:
     assert created_city and created_region
     _, _, created_city, _ = create_geo_nodes(geo_dict_1)
     assert created_city
-    # FIXME: Yeah, this should break for now.
     # This always raises multiple nodes
     with pytest.raises(MultipleNodesReturned):
         City.nodes.get(repeated_city)

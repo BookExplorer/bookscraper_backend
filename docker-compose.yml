@@ -27,7 +27,7 @@ services:
       graph_db:
         condition: service_started
     environment:
-      DATABASE_URL: bolt://neo4j:${NEO4J_PASSWORD}@graph_db:7687
+      DATABASE_URL: bolt://neo4j:${NEO4J_PASSWORD}@graph_db:7687 # What is this for?
       NEO4J_URI: ${NEO4J_URI}
       NEO4J_PASSWORD: ${NEO4J_PASSWORD}
     networks:

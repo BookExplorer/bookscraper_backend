@@ -18,7 +18,7 @@ class ProfileRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    setup_db()
+    setup_db(uri = "graph_db:7687") # If I pass the actual docker url, this should be fine, right? 
     create_constraints()
     yield
 
@@ -32,10 +32,15 @@ app_with_profiler = WSGIMiddleware(
 @app.post("/process-profile/")
 def profile(request: ProfileRequest):
     try:
+        logger.info(f"[Process Profile Request]: Starting for {request.profile_url}!")
         books = process_profile(str(request.profile_url))
+        logger.info("[Process Profile] Extracted books!")
         cont = extract_authors(books)
+        logger.info("[Process Profile] Extracted authors!")
         cc = generate_country_count(cont)
+        logger.info("[Process Profile] Counted countries!")
         full_count = process_country_count(cc)
+        logger.info("[Process Profile] Processed country count!")
         return {"data": full_count}
     except Exception as e:
         logger.exception(str(e))

@@ -48,20 +48,24 @@ def create_geo_nodes(geo_dict: Dict[str, str | float]) -> tuple[City, Country, b
     # Then, we create the city node.
     city_node, created_city_node = create_or_get_city(geo_dict)
     city_node.save()
+    logger.debug("[graph_db] City %s creation: %s", geo_dict['city'], created_city_node)
     created_region_node = None
     if "region" in geo_dict:
         region_node, created_region_node = create_or_get_region(geo_dict)
+        logger.debug("[graph_db] Region %s creation: %s", geo_dict['region'], created_region_node)
         region_node.save()
         if not region_node.country.is_connected(country_node):
             region_node.country.connect(country_node)
-        
+            logger.debug("[graph_db] %s wasn't connected to %s, connection done.", geo_dict['region'], geo_dict['country'])
         # If there is region, then city connects to region:
         if not city_node.region.is_connected(region_node):
             city_node.region.connect(region_node)
+            logger.debug("[graph_db] %s wasn't connected to %s, connection done.", geo_dict['city'], geo_dict['region'])
     else:
         # If there is no region, city connects to country:
         if not city_node.country.is_connected(country_node):
             city_node.country.connect(country_node)
+            logger.debug("[graph_db] %s wasn't connected to %s, connection done.", geo_dict['city'], geo_dict['country'])
     return city_node, country_node, created_city_node, created_region_node
 
 
@@ -82,7 +86,7 @@ def create_or_get_region(geo_dict: Dict[str, str | float]) -> tuple[Region, bool
         region_node = Region(name = geo_dict["region"])
         created = True
     else:
-        logger.debug(f"The region {geo_dict['region']} already exists within {geo_dict['country']} so we didn't create it.")
+        logger.debug("The region %s already exists within %s  so we didn't create it.", {geo_dict['region']}, {geo_dict['country']})
         region_node =  Region.nodes.get(name = geo_dict["region"])
         created = False
     return region_node, created
@@ -159,6 +163,7 @@ def fetch_author_by_gr_id(goodreads_id: int) -> Author:
     Returns:
         Author: Author node with that Goodreads id.
     """
+    logger.debug("[graph_db] Looking for author %s", {goodreads_id})
     return Author.nodes.get_or_none(goodreads_id = goodreads_id)
 
 
@@ -173,10 +178,12 @@ def insert_everything(author_dict: Dict[str, str], geo_dict: Dict[str,str | floa
         Country| None: If there is a geographical dictionary, return the created/existing Country node.
     """
     author: Author = create_author(author_dict)
+    logger.info("[graph_db] Created author!")
     # Create regions if applicable.:
     if geo_dict:
         city, country, _, _ = create_geo_nodes(geo_dict)
         if not author.birth_city.is_connected(city):
+            logger.debug("Author wasn't connected to birth city, connecting! ")
             author.birth_city.connect(city)
         return country
     return None
@@ -194,7 +201,7 @@ def create_constraints():
         try:
             db.cypher_query(query)
         except Exception as e:
-            logger.debug(f"Error creating constraint: {e}")
+            logger.debug("Error creating constraint: %s", e)
 
 
 def get_author_place(author: Author, desired_entity: str = "Country") -> StructuredNode | None:
