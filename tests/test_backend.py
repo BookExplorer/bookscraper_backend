@@ -61,7 +61,6 @@ def test_author_extraction():
     ],
 
 )
-#TODO: Add the breaking weird place to both lat long place and birthplace extraction testing. 
 # This ensures sensible defaults for everything.
 # IF we decide that lat long place will try without region name, create something that is always broken as a test as well pls
 # no sense in not having sensible defaults if everything else fails, right
