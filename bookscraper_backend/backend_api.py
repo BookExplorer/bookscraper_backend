@@ -18,7 +18,7 @@ class ProfileRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    setup_db()
+    setup_db(uri="") # If I pass the actual docker url, this should be fine, right? 
     create_constraints()
     yield
 
