@@ -18,7 +18,7 @@ class ProfileRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    setup_db(uri = "graph_db:7687") # If I pass the actual docker url, this should be fine, right? 
+    setup_db(uri = "bolt://neo4j@graph_db:7687") # If I pass the actual docker url, this should be fine, right? 
     create_constraints()
     yield
 
@@ -29,7 +29,7 @@ app = FastAPI(lifespan=lifespan)
 @app.post("/process-profile/")
 def profile(request: ProfileRequest):
     try:
-        logger.warning(f"[Process Profile Request]: Starting for {request.profile_url}!")
+        logger.info(f"[Process Profile Request]: Starting for {request.profile_url}!")
         books = process_profile(str(request.profile_url))
         logger.info("[Process Profile] Extracted books!")
         cont = extract_authors(books)
