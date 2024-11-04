@@ -23,16 +23,13 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-# Add Werkzeug Profiler Middleware
-app_with_profiler = WSGIMiddleware(
-    ProfilerMiddleware(app, restrictions=[30], profile_dir="./profile")
-)
+
 
 
 @app.post("/process-profile/")
 def profile(request: ProfileRequest):
     try:
-        logger.info(f"[Process Profile Request]: Starting for {request.profile_url}!")
+        logger.warning(f"[Process Profile Request]: Starting for {request.profile_url}!")
         books = process_profile(str(request.profile_url))
         logger.info("[Process Profile] Extracted books!")
         cont = extract_authors(books)
