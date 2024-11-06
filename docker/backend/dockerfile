@@ -18,9 +18,6 @@ RUN apt-get update && apt-get install -y wget gnupg2 \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
-# Copy the rest of the application's code to the container
-COPY . /app
-
 # # Command to run when starting the container
 CMD uvicorn bookscraper_backend.backend_api:app --host 0.0.0.0 --port 8000
 
