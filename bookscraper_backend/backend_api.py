@@ -6,8 +6,6 @@ from bookscraper_backend.backend import (
 )
 from goodreads_scraper.scrape import process_profile
 from pydantic import BaseModel, HttpUrl
-from fastapi.middleware.wsgi import WSGIMiddleware
-from werkzeug.middleware.profiler import ProfilerMiddleware
 from bookscraper_backend.setup import setup_db
 from graph_db import create_constraints
 from contextlib import asynccontextmanager
@@ -18,7 +16,7 @@ class ProfileRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    setup_db(uri = "bolt://neo4j@graph_db:7687") # If I pass the actual docker url, this should be fine, right? 
+    setup_db() # If I pass the actual docker url, this should be fine, right? 
     create_constraints()
     yield
 
