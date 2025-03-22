@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 selenium = "^4.16.0"
-goodreads-scraper = {git = "https://github.com/BookExplorer/Goodreads-Scraper"}
+goodreads-scraper = {git = "https://github.com/BookExplorer/Goodreads-Scraper.git"}
 pandas = "^2.2.0"
 pycountry = "^23.12.11"
 sqlalchemy = "^2.0.27"
