@@ -1,6 +1,6 @@
 import geopy.geocoders
 from geopy.location import Location
-from goodreads_scraper.scrape import process_profile, scrape_gr_author
+from goodreads_scraper.scrape import process_goodreads_url, scrape_gr_author
 from typing import Dict, List
 from collections import Counter
 from graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
@@ -119,7 +119,7 @@ def get_lat_long_place(place: str) -> tuple[int, int]| None:
 
 if __name__ == "__main__":
     user_profile = "https://www.goodreads.com/user/show/71341746-tamir-einhorn-salem"
-    books = process_profile(user_profile)
+    books = process_goodreads_url(user_profile)
     cont = extract_authors(books)
     cc = generate_country_count(cont)
     df = process_country_count(cc)

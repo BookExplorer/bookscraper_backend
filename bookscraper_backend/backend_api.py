@@ -4,7 +4,7 @@ from bookscraper_backend.backend import (
     extract_authors,
     generate_country_count,
 )
-from goodreads_scraper.scrape import process_profile
+from goodreads_scraper.scrape import process_goodreads_url
 from pydantic import BaseModel, HttpUrl
 from fastapi.middleware.wsgi import WSGIMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
@@ -33,7 +33,7 @@ app_with_profiler = WSGIMiddleware(
 def profile(request: ProfileRequest):
     try:
         logger.info(f"[Process Profile Request]: Starting for {request.profile_url}!")
-        books = process_profile(str(request.profile_url))
+        books = process_goodreads_url(str(request.profile_url))
         logger.info("[Process Profile] Extracted books!")
         cont = extract_authors(books)
         logger.info("[Process Profile] Extracted authors!")
