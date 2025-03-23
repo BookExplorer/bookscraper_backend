@@ -1,18 +1,20 @@
 from fastapi.testclient import TestClient
 from bookscraper_backend.backend_api import app
+from dotenv import load_dotenv
 import os
 import pytest
 
 
 #FIXME: The issue here is that if the app calls the DB url locally, it wont resolve because it references graph_db (its meant to run inside containers)
+load_dotenv(".env.test", override=True)
 
-@pytest.fixture(scope="module")
+
+@pytest.fixture(scope="module", autouse=True)
 def client():
     with TestClient(app) as test_client:
         yield test_client
 
 def test_profile_endpoint(client: TestClient) -> None:
-    os.environ["NEO4J_URI"] = "localhost:7687"
     response = client.post(
             "/process-profile/",
             json={
@@ -29,7 +31,6 @@ def test_profile_endpoint(client: TestClient) -> None:
 
 
 def test_profile_endpoint_bad_url(client: TestClient) -> None:
-    os.environ["NEO4J_URI"] = "localhost:7687"
     response = client.post(
             "/process-profile/",
             json={
