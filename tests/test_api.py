@@ -6,13 +6,15 @@ import pytest
 
 
 #FIXME: The issue here is that if the app calls the DB url locally, it wont resolve because it references graph_db (its meant to run inside containers)
-load_dotenv(".env.test", override=True)
+
 
 
 @pytest.fixture(scope="module", autouse=True)
 def client():
+    load_dotenv(".env.test", override=True)
     with TestClient(app) as test_client:
         yield test_client
+    load_dotenv(".env", override=True)
 
 def test_profile_endpoint(client: TestClient) -> None:
     response = client.post(
