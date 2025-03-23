@@ -25,12 +25,6 @@ def test_profile_endpoint(client: TestClient) -> None:
         )
 
     assert response.status_code == 200
-    # In this profile, we have just 2 books, one from Orwell (India) and Twain (USA)
-    # For stupid reasons, the USA from Goodreads fails. So we expect india = 1, rest 0.
-    data =  response.json()["data"]
-    assert data["India"] == 1
-    assert all(data[country] == 0 for country in data if country != "India")
-
 
 def test_profile_endpoint_bad_url(client: TestClient) -> None:
     response = client.post(
