@@ -11,7 +11,7 @@ def client():
     with TestClient(app) as test_client:
         yield test_client
 
-def test_profile_endpoint(client):
+def test_profile_endpoint(client: TestClient) -> None:
     os.environ["NEO4J_URI"] = "localhost:7687"
     response = client.post(
             "/process-profile/",
@@ -28,7 +28,7 @@ def test_profile_endpoint(client):
     assert all(data[country] == 0 for country in data if country != "India")
 
 
-def test_profile_endpoint_bad_url(client):
+def test_profile_endpoint_bad_url(client: TestClient) -> None:
     os.environ["NEO4J_URI"] = "localhost:7687"
     response = client.post(
             "/process-profile/",
