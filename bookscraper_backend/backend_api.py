@@ -12,13 +12,17 @@ from bookscraper_backend.setup import setup_db
 from graph_db import create_constraints
 from contextlib import asynccontextmanager
 from logger import logger
+import os
+
 class ProfileRequest(BaseModel):
     profile_url: HttpUrl
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    setup_db(uri = "graph_db:7687") # If I pass the actual docker url, this should be fine, right? 
+    neo4j_uri = os.getenv("NEO4J_URI")
+    neo4j_password = os.getenv("NEO4J_PASSWORD")
+    setup_db(uri=neo4j_uri,password=neo4j_password)
     create_constraints()
     yield
 
