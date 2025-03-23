@@ -1,15 +1,19 @@
 from fastapi.testclient import TestClient
 from bookscraper_backend.backend_api import app
 import os
-client = TestClient(app)
+import pytest
+
 
 #FIXME: The issue here is that if the app calls the DB url locally, it wont resolve because it references graph_db (its meant to run inside containers)
 
+@pytest.fixture(scope="module")
+def client():
+    with TestClient(app) as test_client:
+        yield test_client
 
-def test_profile_endpoint():
+def test_profile_endpoint(client):
     os.environ["NEO4J_URI"] = "localhost:7687"
-    with TestClient(app) as client:
-        response = client.post(
+    response = client.post(
             "/process-profile/",
             json={
                 "profile_url": "https://www.goodreads.com/user/show/183326807"
@@ -24,12 +28,9 @@ def test_profile_endpoint():
     assert all(data[country] == 0 for country in data if country != "India")
 
 
-def test_profile_endpoint_bad_url():
+def test_profile_endpoint_bad_url(client):
     os.environ["NEO4J_URI"] = "localhost:7687"
-    # FIXME: The main problem here is having different settings for development and whatever
-    
-    with TestClient(app) as client:
-        response = client.post(
+    response = client.post(
             "/process-profile/",
             json={
                 "profile_url": "sdfdsd"
