@@ -1,12 +1,7 @@
 from fastapi.testclient import TestClient
 from bookscraper_backend.backend_api import app
 from dotenv import load_dotenv
-import os
 import pytest
-
-
-#FIXME: The issue here is that if the app calls the DB url locally, it wont resolve because it references graph_db (its meant to run inside containers)
-
 
 
 @pytest.fixture(scope="module", autouse=True)
