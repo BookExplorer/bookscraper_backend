@@ -6,6 +6,9 @@ import pytest
 
 @pytest.fixture(scope="module", autouse=True)
 def client():
+    # Testing happens (now) locally. So .env.test points to localhost. However, since env vars are used when the app is setup
+    # and they are needed to connect the app to the db...
+    # We need to undo the .env.test, hence what we do here.
     load_dotenv(".env.test", override=True)
     with TestClient(app) as test_client:
         yield test_client
