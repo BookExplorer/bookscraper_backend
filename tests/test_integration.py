@@ -44,7 +44,7 @@ def cleanup_data():
 def test_real_small_shelf():
     # Keep in mind this very small shelf might not have repeated geo nodes and is thus not an extensive test.
     books = scrape_shelf(
-        "https://www.goodreads.com/review/list/71341746-tamir-einhorn-salem?ref=nav_mybooks&shelf=comprar-em-outra-lingua"
+        "https://www.goodreads.com/user/show/183326807-samir-talem"
     )
     authors = extract_authors(books)
     country_count = generate_country_count(authors)

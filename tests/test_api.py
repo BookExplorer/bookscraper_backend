@@ -18,7 +18,7 @@ def test_profile_endpoint(client: TestClient) -> None:
     response = client.post(
             "/process-profile/",
             json={
-                "profile_url": "https://www.goodreads.com/user/show/183326807"
+                "profile_url": "https://www.goodreads.com/user/show/183326807-samir-talem"
             },
         )
 
