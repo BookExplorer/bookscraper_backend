@@ -48,11 +48,11 @@ def create_geo_nodes(geo_dict: Dict[str, str | float]) -> tuple[City, Country, b
     # Then, we create the city node.
     city_node, created_city_node = create_or_get_city(geo_dict)
     city_node.save()
-    logger.debug("[graph_db] City %s creation: %s", geo_dict['city'], created_city_node)
+    logger.info("[graph_db] City %s creation: %s", geo_dict['city'], created_city_node)
     created_region_node = None
     if "region" in geo_dict:
         region_node, created_region_node = create_or_get_region(geo_dict)
-        logger.debug("[graph_db] Region %s creation: %s", geo_dict['region'], created_region_node)
+        logger.info("[graph_db] Region %s creation: %s", geo_dict['region'], created_region_node)
         region_node.save()
         if not region_node.country.is_connected(country_node):
             region_node.country.connect(country_node)
