@@ -201,7 +201,7 @@ def create_constraints():
         try:
             db.cypher_query(query)
         except Exception as e:
-            logger.debug("Error creating constraint: %s", e)
+            logger.error("Error creating constraint: %s", e)
 
 
 def get_author_place(author: Author, desired_entity: str = "Country") -> StructuredNode | None:

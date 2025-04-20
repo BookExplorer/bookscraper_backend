@@ -53,7 +53,7 @@ def generate_country_count(cont: Counter) -> Dict[str, int]:
             logger.info(f"[backend] Found {author_id} in database.")
             country = get_author_place(author, "Country")
         else:
-            logger.info(f"[backend] Didn't find {author_id} in database, going to scrape from GR.")
+            logger.debug(f"[backend] Didn't find {author_id} in database, going to scrape from GR.")
             birthplace, _ = scrape_gr_author(author_link)  # Scrape the birthplace
             logger.info("[backend] Scraped author.")
             geo_dict = process_birthplace(birthplace)
