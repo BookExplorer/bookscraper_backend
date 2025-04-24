@@ -9,7 +9,7 @@ from neomodel import (
 
 
 # TODO: This has no constraints and so we need to deal with them elsewhere.
-class Country(StructuredNode):
+class Country(StructuredNode): #TODO: Draw out schema and create equivalents in db models
 
     name = StringProperty(unique_index=True, required=True)
     regions = RelationshipTo("Region", "CONTAINS")

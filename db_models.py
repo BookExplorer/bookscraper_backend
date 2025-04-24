@@ -10,3 +10,4 @@ from sqlalchemy.orm import relationship
 
 class Base(DeclarativeBase):
     pass
+
