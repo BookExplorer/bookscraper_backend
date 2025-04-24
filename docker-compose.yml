@@ -14,6 +14,13 @@ services:
     networks:
       - app-network
 
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: example
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   app:
     build:
       context: .
@@ -25,6 +32,8 @@ services:
       - "8000:8000"
     depends_on:
       graph_db:
+        condition: service_started
+      db:
         condition: service_started
     environment:
       DATABASE_URL: bolt://neo4j:${NEO4J_PASSWORD}@graph_db:7687 # What is this for?
