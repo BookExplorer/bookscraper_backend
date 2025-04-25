@@ -36,14 +36,14 @@ class City(BaseModel):
     region_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Region.id))
     region: Mapped[Optional["Region"]] = relationship(back_populates="cities")
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
-    authors: Mapped[Optional[list["Author"]]] = relationship(back_populates="city")
+    authors: Mapped[Optional[list["Author"]]] = relationship(back_populates="birth_city")
 
 class Author(BaseModel):
     __tablename__ = "authors"
     goodreads_id: Mapped[Optional[int]]
     goodreads_link: Mapped[Optional[str]]
     birth_city_id = mapped_column(ForeignKey(City.id))
-    city: Mapped[City] = relationship(back_populates="authors")
+    birth_city: Mapped[City] = relationship(back_populates="authors")
 
 Base.metadata.create_all(engine)
 brasil = Country(name="Brasil")
