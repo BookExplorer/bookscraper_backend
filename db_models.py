@@ -1,9 +1,18 @@
 from typing import Optional
-from sqlalchemy import String, Integer, ForeignKey, create_engine
+from sqlalchemy import String, Integer, ForeignKey, create_engine, URL
 from sqlalchemy.orm import DeclarativeBase, Mapped,sessionmaker, mapped_column, relationship
+import os
 
-db_url = 'sqlite:///t.db'
-
+DB_USER = os.getenv("DB_USER", "user")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
+db_url = URL.create(
+    "postgresql",
+    username=DB_USER,
+    password=DB_PASSWORD,
+    port=5432,
+    host="localhost",
+    database="db"
+)
 engine = create_engine(db_url)
 
 Session = sessionmaker(bind=engine)
