@@ -40,8 +40,8 @@ class City(BaseModel):
 
 class Author(BaseModel):
     __tablename__ = "authors"
-    goodreads_id: Mapped[Optional[int]]
-    goodreads_link: Mapped[Optional[str]]
+    goodreads_id: Mapped[Optional[int]] = mapped_column(unique=True)
+    goodreads_link: Mapped[Optional[str]] = mapped_column(unique=True)
     birth_city_id = mapped_column(ForeignKey(City.id))
     birth_city: Mapped[City] = relationship(back_populates="authors")
 
