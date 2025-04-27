@@ -1,7 +1,23 @@
 from typing import Optional
-from sqlalchemy import String, Integer, ForeignKey, create_engine, URL
-from sqlalchemy.orm import DeclarativeBase, Mapped,sessionmaker, mapped_column, relationship
+from sqlalchemy import (
+    String,
+    Integer,
+    ForeignKey,
+    create_engine,
+    URL,
+    UniqueConstraint,
+    CheckConstraint,
+    Index,
+)
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    sessionmaker,
+    mapped_column,
+    relationship,
+)
 import os
+import datetime
 
 DB_USER = os.getenv("DB_USER", "user")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
@@ -11,7 +27,7 @@ db_url = URL.create(
     password=DB_PASSWORD,
     port=5432,
     host="localhost",
-    database="db"
+    database="db",
 )
 engine = create_engine(db_url)
 
@@ -22,33 +38,62 @@ session = Session()
 class Base(DeclarativeBase):
     pass
 
+
 class BaseModel(Base):
-    __abstract__ = True # This allows it to be inherited by other classes.
+    __abstract__ = True  # This allows it to be inherited by other classes.
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
+
     def __repr__(self):
         return f"Class: {type(self).__name__} Id: {self.id}, name: {self.name}"
-    
+
+
 class Country(BaseModel):
     __tablename__ = "countries"
-    #TODO: Uniqueness check maybe? Add columns here for testing alembic auto generates?
-    regions: Mapped[list["Region"]] = relationship(back_populates="country") # Writes to Region.country
+    regions: Mapped[list["Region"]] = relationship(
+        back_populates="country"
+    )  # Writes to Region.country
+    still_exists: Mapped[Optional[bool]] = mapped_column(default=True)
+    end_date: Mapped[Optional[datetime.date]]
+    __table_args__ = (
+        Index(
+            "uq_active_country_name",
+            "name",
+            unique=True,
+            postgresql_where=(still_exists),
+        ),
+        Index(
+            "uq_inactive_country",
+            "name",
+            "end_date",
+            unique=True,
+            postgresql_where=(~still_exists),
+        ),
+        CheckConstraint(
+            "(still_exists IS true AND end_date is NULL) OR "
+            "(still_exists IS false AND end_date IS NOT NULL)"
+        ),
+    )
 
 
 class Region(BaseModel):
     __tablename__ = "regions"
-    #TODO: Add constraint for regions within a country
+    # TODO: Add constraint for regions within a country
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
     country: Mapped[Country] = relationship(back_populates="regions")
     cities: Mapped[Optional[list["City"]]] = relationship(back_populates="region")
 
+
 class City(BaseModel):
     __tablename__ = "cities"
-    #TODO: Add constraint for cities having some region or country.
+    # TODO: Add constraint for cities having some region or country.
     region_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Region.id))
     region: Mapped[Optional["Region"]] = relationship(back_populates="cities")
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
-    authors: Mapped[Optional[list["Author"]]] = relationship(back_populates="birth_city")
+    authors: Mapped[Optional[list["Author"]]] = relationship(
+        back_populates="birth_city"
+    )
+
 
 class Author(BaseModel):
     __tablename__ = "authors"
@@ -57,15 +102,15 @@ class Author(BaseModel):
     birth_city_id = mapped_column(ForeignKey(City.id))
     birth_city: Mapped[City] = relationship(back_populates="authors")
 
+
 Base.metadata.create_all(engine)
 brasil = Country(name="Brasil")
 rio = Region(name="Rio de Janeiro", country=brasil)
-tere = City(name="Teresópolis", region = rio)
-ni = City(name="Nova Iguacu", region = rio)
-a = Author(name= "ze", birth_city = ni)
-b = Author(name = "cuin",birth_city=tere)
-c = Author(name= "mr", birth_city=ni)
-session.add(brasil)
+tere = City(name="Teresópolis", region=rio)
+ni = City(name="Nova Iguacu", region=rio)
+a = Author(name="ze", birth_city=ni)
+b = Author(name="cuin", birth_city=tere)
+c = Author(name="mr", birth_city=ni)
+session.add_all([brasil])
 session.commit()
 print(brasil)
-
