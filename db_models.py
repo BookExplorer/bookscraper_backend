@@ -31,17 +31,20 @@ class BaseModel(Base):
     
 class Country(BaseModel):
     __tablename__ = "countries"
+    #TODO: Uniqueness check maybe? Add columns here for testing alembic auto generates?
     regions: Mapped[list["Region"]] = relationship(back_populates="country") # Writes to Region.country
 
 
 class Region(BaseModel):
     __tablename__ = "regions"
+    #TODO: Add constraint for regions within a country
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
     country: Mapped[Country] = relationship(back_populates="regions")
     cities: Mapped[Optional[list["City"]]] = relationship(back_populates="region")
 
 class City(BaseModel):
     __tablename__ = "cities"
+    #TODO: Add constraint for cities having some region or country.
     region_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Region.id))
     region: Mapped[Optional["Region"]] = relationship(back_populates="cities")
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
