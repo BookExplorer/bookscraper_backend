@@ -78,20 +78,38 @@ class Country(BaseModel):
 
 class Region(BaseModel):
     __tablename__ = "regions"
-    # TODO: Add constraint for regions within a country
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
     country: Mapped[Country] = relationship(back_populates="regions")
     cities: Mapped[Optional[list["City"]]] = relationship(back_populates="region")
+    __table_args__ = UniqueConstraint("country_id", "name")
 
 
 class City(BaseModel):
     __tablename__ = "cities"
-    # TODO: Add constraint for cities having some region or country.
     region_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Region.id))
     region: Mapped[Optional["Region"]] = relationship(back_populates="cities")
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
     authors: Mapped[Optional[list["Author"]]] = relationship(
         back_populates="birth_city"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "(region_id is NOT NULL and country_id is NULL) OR (country_id is NOT NULL and region_id is NULL)"
+        ),
+        Index(
+            "uq_city_region",
+            "region_id",
+            "name",
+            unique=True,
+            postgresql_where=(region_id.isnot(None)),
+        ),
+        Index(
+            "uq_city_country",
+            "country_id",
+            "name",
+            unique=True,
+            postgresql_where=(country_id.isnot(None)),
+        ),
     )
 
 
