@@ -29,7 +29,7 @@ db_url = URL.create(
     host="localhost",
     database="db",
 )
-engine = create_engine(db_url)
+engine = create_engine(db_url) # TODO, move this elsewhere, we will likely have to reuse this
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -37,7 +37,7 @@ session = Session()
 
 class Base(DeclarativeBase):
     pass
-
+#TODO: Test out constraints and classes.
 
 class BaseModel(Base):
     __abstract__ = True  # This allows it to be inherited by other classes.
