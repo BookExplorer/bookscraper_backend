@@ -8,6 +8,7 @@ from sqlalchemy import (
     UniqueConstraint,
     CheckConstraint,
     Index,
+    text
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -29,7 +30,9 @@ db_url = URL.create(
     host="localhost",
     database="db",
 )
-engine = create_engine(db_url) # TODO, move this elsewhere, we will likely have to reuse this
+engine = create_engine(
+    db_url
+)  # TODO, move this elsewhere, we will likely have to reuse this
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -37,7 +40,10 @@ session = Session()
 
 class Base(DeclarativeBase):
     pass
-#TODO: Test out constraints and classes.
+
+
+# TODO: Test out constraints and classes.
+
 
 class BaseModel(Base):
     __abstract__ = True  # This allows it to be inherited by other classes.
@@ -55,27 +61,26 @@ class Country(BaseModel):
     )  # Writes to Region.country
     still_exists: Mapped[Optional[bool]] = mapped_column(default=True)
     end_date: Mapped[Optional[datetime.date]]
-    __table_args__ = (
+    args = tuple([
+        Index(
+            "uq_inactive_country",
+            "name", "end_date",
+            unique=True,
+            postgresql_where=text("still_exists IS FALSE")
+        ),
+        CheckConstraint(
+            "(still_exists IS TRUE AND end_date IS NULL) OR "
+            "(still_exists IS FALSE AND end_date IS NOT NULL)",
+            name="chk_country_status"
+        ),
         Index(
             "uq_active_country_name",
             "name",
             unique=True,
-            postgresql_where=(still_exists),
-        ),
-        Index(
-            "uq_inactive_country",
-            "name",
-            "end_date",
-            unique=True,
-            postgresql_where=(~still_exists),
-        ),
-        CheckConstraint(
-            "(still_exists IS true AND end_date is NULL) OR "
-            "(still_exists IS false AND end_date IS NOT NULL)"
-        ),
-    )
-
-
+            postgresql_where=text("still_exists IS TRUE")
+        )
+])
+    __table_args__ = args
 class Region(BaseModel):
     __tablename__ = "regions"
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
