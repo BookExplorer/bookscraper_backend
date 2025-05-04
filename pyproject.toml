@@ -24,6 +24,7 @@ geopy = "^2.4.1"
 dotenv = "^0.9.9"
 alembic = "^1.15.2"
 psycopg2-binary = "^2.9.10"
+schemathesis = "^3.39.16"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
