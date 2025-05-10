@@ -44,7 +44,7 @@ class Base(DeclarativeBase):
 
 
 # TODO: Test out constraints and classes.
-
+# TODO: Auto generate migrations from models, assume tests will have all applied?, then run tests
 
 class BaseModel(Base):
     __abstract__ = True  # This allows it to be inherited by other classes.
@@ -124,14 +124,14 @@ class Author(BaseModel):
     birth_city: Mapped[City] = relationship(back_populates="authors")
 
 
-Base.metadata.create_all(engine)
-brasil = Country(name="Brasil")
-rio = Region(name="Rio de Janeiro", country=brasil)
-tere = City(name="Teresópolis", region=rio)
-ni = City(name="Nova Iguacu", region=rio)
-a = Author(name="ze", birth_city=ni)
-b = Author(name="cuin", birth_city=tere)
-c = Author(name="mr", birth_city=ni)
-session.add_all([brasil])
-session.commit()
-print(brasil)
+# Base.metadata.create_all(engine)
+# brasil = Country(name="Brasil")
+# rio = Region(name="Rio de Janeiro", country=brasil)
+# tere = City(name="Teresópolis", region=rio)
+# ni = City(name="Nova Iguacu", region=rio)
+# a = Author(name="ze", birth_city=ni)
+# b = Author(name="cuin", birth_city=tere)
+# c = Author(name="mr", birth_city=ni)
+# session.add_all([brasil])
+# session.commit()
+# print(brasil)
