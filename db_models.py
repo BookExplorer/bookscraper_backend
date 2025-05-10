@@ -22,6 +22,7 @@ import datetime
 
 DB_USER = os.getenv("DB_USER", "user")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
+DB_PORT = os.getenv("DB_PORT", 5432)
 db_url = URL.create(
     "postgresql",
     username=DB_USER,
@@ -61,14 +62,12 @@ class Country(BaseModel):
     )  # Writes to Region.country
     still_exists: Mapped[Optional[bool]] = mapped_column(default=True)
     end_date: Mapped[Optional[datetime.date]]
-    args = tuple([
-        Index(
+    __table_args__ = (Index(
             "uq_inactive_country",
             "name", "end_date",
             unique=True,
-            postgresql_where=text("still_exists IS FALSE")
-        ),
-        CheckConstraint(
+            postgresql_where=text("still_exists IS FALSE")),
+            CheckConstraint(
             "(still_exists IS TRUE AND end_date IS NULL) OR "
             "(still_exists IS FALSE AND end_date IS NOT NULL)",
             name="chk_country_status"
@@ -79,14 +78,13 @@ class Country(BaseModel):
             unique=True,
             postgresql_where=text("still_exists IS TRUE")
         )
-])
-    __table_args__ = args
+        )
 class Region(BaseModel):
     __tablename__ = "regions"
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
     country: Mapped[Country] = relationship(back_populates="regions")
     cities: Mapped[Optional[list["City"]]] = relationship(back_populates="region")
-    __table_args__ = UniqueConstraint("country_id", "name")
+    __table_args__ = (UniqueConstraint("country_id", "name"),)
 
 
 class City(BaseModel):
