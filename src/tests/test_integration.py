@@ -1,6 +1,6 @@
 from testcontainers.neo4j import Neo4jContainer
 import pytest
-from bookscraper_backend.backend import extract_authors, generate_country_count
+from src.backend import extract_authors, generate_country_count
 from goodreads_scraper.scrape import scrape_shelf
 from graph_db import (
     create_geo_nodes,
@@ -10,7 +10,7 @@ from graph_db import (
     city_country_exists,
     create_or_get_city
 )
-from bookscraper_backend.setup import setup_db
+from src.setup import setup_db
 from graph_models import City
 from neomodel.exceptions import MultipleNodesReturned
 from neomodel import db
