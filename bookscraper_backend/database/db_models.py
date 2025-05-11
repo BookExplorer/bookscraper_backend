@@ -3,8 +3,6 @@ from sqlalchemy import (
     String,
     Integer,
     ForeignKey,
-    create_engine,
-    URL,
     UniqueConstraint,
     CheckConstraint,
     Index,
@@ -13,30 +11,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
-    sessionmaker,
     mapped_column,
     relationship,
 )
-import os
+
 import datetime
 
-DB_USER = os.getenv("DB_USER", "user")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
-DB_PORT = os.getenv("DB_PORT", 5432)
-db_url = URL.create(
-    "postgresql",
-    username=DB_USER,
-    password=DB_PASSWORD,
-    port=5432,
-    host="localhost",
-    database="db",
-)
-engine = create_engine(
-    db_url
-)  # TODO, move this elsewhere, we will likely have to reuse this
-
-Session = sessionmaker(bind=engine)
-session = Session()
 
 
 class Base(DeclarativeBase):
