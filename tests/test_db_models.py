@@ -1,6 +1,6 @@
 from hypothesis import strategies as st
 from datetime import date
-from db_models import Country, Region, City
+import bookscraper_backend.database.db_models as db_models
 
 def countries():
     return st.builds(
@@ -25,3 +25,15 @@ def valid_countries():
             end_date=st.dates(min_value=date(1900, 1, 1))
         )
     )
+
+Base.metadata.create_all(engine)
+brasil = Country(name="Brasil")
+rio = Region(name="Rio de Janeiro", country=brasil)
+tere = City(name="Teresópolis", region=rio)
+ni = City(name="Nova Iguacu", region=rio)
+a = Author(name="ze", birth_city=ni)
+b = Author(name="cuin", birth_city=tere)
+c = Author(name="mr", birth_city=ni)
+session.add_all([brasil])
+session.commit()
+print(brasil)

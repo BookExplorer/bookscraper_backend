@@ -79,6 +79,7 @@ class Country(BaseModel):
             postgresql_where=text("still_exists IS TRUE")
         )
         )
+
 class Region(BaseModel):
     __tablename__ = "regions"
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
