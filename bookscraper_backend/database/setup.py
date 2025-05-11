@@ -13,7 +13,7 @@ db_url = URL.create(
     "postgresql",
     username=DB_USER,
     password=DB_PASSWORD,
-    port=DB_PORT,
+    port=DB_PORT, #type: ignore
     host="localhost",
     database="db",
 )
