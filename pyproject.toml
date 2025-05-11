@@ -3,7 +3,7 @@ name = "bookscraper-backend"
 version = "0.1.0"
 description = ""
 authors = ["Tamir Einhorn Salem <tamtamireinhorn@gmail.com>"]
-packages = [{ include = "*", from = "src" }]
+packages = [{ include = "bookscraper_backend" }]
 readme = "README.md"
 
 [tool.poetry.dependencies]
