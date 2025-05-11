@@ -1,7 +1,7 @@
 from hypothesis import strategies as st
 from datetime import date
-from src.database.setup import db_session
-import src.database.db_models as db_models
+from bookscraper_backend.database.setup import db_session
+import bookscraper_backend.database.db_models as db_models
 
 def countries():
     return st.builds(

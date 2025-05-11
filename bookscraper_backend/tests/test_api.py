@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from src.backend_api import app
+from bookscraper_backend.backend_api import app
 from dotenv import load_dotenv
 import pytest
 
