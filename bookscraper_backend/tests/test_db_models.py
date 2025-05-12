@@ -1,39 +1,25 @@
-from hypothesis import strategies as st
-from datetime import date
+from hypothesis import given, assume, strategies as st
+import string
+import pytest
+from sqlalchemy.exc import IntegrityError
+from bookscraper_backend.database import db_models
 from bookscraper_backend.database.setup import db_session
-import bookscraper_backend.database.db_models as db_models
 
-def countries():
-    return st.builds(
-        db_models.Country,
-        name=st.text(min_size=2, max_size=50),
-        still_exists=st.booleans(),
-        end_date=st.dates() | st.none()
-    )
+#TODO: Maybe define from this invalid countries and valid countries and all that.
+@given(
+    name=st.text(alphabet=string.ascii_letters + " -", min_size=1, max_size=50),
+    still_exists=st.booleans(),
+    end_date=st.one_of(st.none(), st.dates())
+)
+def test_country_constraints(name, still_exists, end_date):
+    c = db_models.Country(name=name, still_exists=still_exists, end_date=end_date)
+    db_session.add(c)
+    should_fail = (still_exists and end_date is not None) or (not still_exists and end_date is None)
 
-def valid_countries():
-    return st.one_of(
-        st.builds(
-            db_models.Country,
-            name=st.text(min_size=2, max_size=50),
-            still_exists=st.just(True),
-            end_date=st.none()
-        ),
-        st.builds(
-            db_models.Country,
-            name=st.text(min_size=2, max_size=50),
-            still_exists=st.just(False),
-            end_date=st.dates(min_value=date(1900, 1, 1))
-        )
-    )
-
-brasil = db_models.Country(name="Brasil")
-rio = db_models.Region(name="Rio de Janeiro", country=brasil)
-tere = db_models.City(name="Teresópolis", region=rio)
-ni = db_models.City(name="Nova Iguacu", region=rio)
-a = db_models.Author(name="ze", birth_city=ni)
-b = db_models.Author(name="cuin", birth_city=tere)
-c = db_models.Author(name="mr", birth_city=ni)
-db_session.add_all([brasil])
-db_session.commit()
-print(brasil)
+    try:
+        db_session.commit()
+    except IntegrityError:
+        db_session.rollback()
+        assert should_fail, f"Expected the bad combo ({still_exists=}, {end_date=}) to fail"
+    else:
+        assert not should_fail, f"Expected the good combo ({still_exists=}, {end_date=}) to pass"

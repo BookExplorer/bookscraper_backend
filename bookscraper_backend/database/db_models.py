@@ -6,7 +6,7 @@ from sqlalchemy import (
     UniqueConstraint,
     CheckConstraint,
     Index,
-    text
+    text,
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -18,13 +18,13 @@ from sqlalchemy.orm import (
 import datetime
 
 
-
 class Base(DeclarativeBase):
     pass
 
 
 # TODO: Test out constraints and classes.
 # TODO: Auto generate migrations from models, assume tests will have all applied?, then run tests
+
 
 class BaseModel(Base):
     __abstract__ = True  # This allows it to be inherited by other classes.
@@ -42,23 +42,27 @@ class Country(BaseModel):
     )  # Writes to Region.country
     still_exists: Mapped[Optional[bool]] = mapped_column(default=True)
     end_date: Mapped[Optional[datetime.date]]
-    __table_args__ = (Index(
+    __table_args__ = (
+        Index(
             "uq_inactive_country",
-            "name", "end_date",
+            "name",
+            "end_date",
             unique=True,
-            postgresql_where=text("still_exists IS FALSE")),
-            CheckConstraint(
+            postgresql_where=text("still_exists IS FALSE"),
+        ),
+        CheckConstraint(
             "(still_exists IS TRUE AND end_date IS NULL) OR "
             "(still_exists IS FALSE AND end_date IS NOT NULL)",
-            name="chk_country_status"
+            name="chk_country_status",
         ),
         Index(
             "uq_active_country_name",
             "name",
             unique=True,
-            postgresql_where=text("still_exists IS TRUE")
-        )
-        )
+            postgresql_where=text("still_exists IS TRUE"),
+        ),
+    )
+
 
 class Region(BaseModel):
     __tablename__ = "regions"
