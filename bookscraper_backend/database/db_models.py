@@ -107,16 +107,3 @@ class Author(BaseModel):
     goodreads_link: Mapped[Optional[str]] = mapped_column(unique=True)
     birth_city_id = mapped_column(ForeignKey(City.id))
     birth_city: Mapped[City] = relationship(back_populates="authors")
-
-
-# Base.metadata.create_all(engine)
-# brasil = Country(name="Brasil")
-# rio = Region(name="Rio de Janeiro", country=brasil)
-# tere = City(name="Teresópolis", region=rio)
-# ni = City(name="Nova Iguacu", region=rio)
-# a = Author(name="ze", birth_city=ni)
-# b = Author(name="cuin", birth_city=tere)
-# c = Author(name="mr", birth_city=ni)
-# session.add_all([brasil])
-# session.commit()
-# print(brasil)

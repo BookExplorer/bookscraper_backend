@@ -1,4 +1,5 @@
 from hypothesis import given, assume, strategies as st
+from typing import Generator
 import string
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -14,7 +15,7 @@ from alembic import command
 naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
 
 @pytest.fixture(scope="module", autouse=True)
-def postgres_container(request) -> Session:
+def postgres_container(request) -> Generator[Session, None, None]:
     with PostgresContainer(
         username=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
@@ -83,3 +84,18 @@ def test_valid_former_country(postgres_container: Session, country: db_models.Co
     postgres_container.add(country)
     postgres_container.commit()
     assert country.id is not None
+
+
+@given(invalid_existing_country())
+def test_invalid_existing_country(postgres_container: Session, country: db_models.Country) -> None:
+    postgres_container.add(country)
+    with pytest.raises(IntegrityError):
+        postgres_container.commit()
+    postgres_container.rollback()
+
+@given(invalid_former_country())
+def test_invalid_former_country(postgres_container: Session, country: db_models.Country) -> None:
+    postgres_container.add(country)
+    with pytest.raises(IntegrityError):
+        postgres_container.commit()
+    postgres_container.rollback()
