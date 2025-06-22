@@ -2,6 +2,7 @@ from hypothesis import given, assume, strategies as st
 import string
 import pytest
 from sqlalchemy.exc import IntegrityError
+import os
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker, Session
 from testcontainers.postgres import PostgresContainer
@@ -14,13 +15,12 @@ naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
 
 @pytest.fixture(scope="module", autouse=True)
 def postgres_container(request) -> Session:
-    with PostgresContainer() as postgres:
+    with PostgresContainer(
+        username=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        dbname=os.getenv("DB_NAME")
+    ) as postgres:
         postgres.start()
-
-        def remove_container():
-            postgres.stop()
-
-        request.addfinalizer(remove_container)  
         engine = sa.create_engine(postgres.get_connection_url())
         alembic_cfg = Config("alembic.ini")
         alembic_cfg.set_main_option("sqlalchemy.url", postgres.get_connection_url()) # I think this is failing now?
@@ -34,11 +34,19 @@ def postgres_container(request) -> Session:
 
 @pytest.fixture(scope="function", autouse=True)
 def cleanup_tables(postgres_container: Session):
-    meta = sa.MetaData()
-    meta.reflect(bind=postgres_container.bind) #type: ignore
-    for table in reversed(meta.sorted_tables):
-        db_session.execute(sa.text(f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE;'))
-
+    postgres_container.rollback()
+    
+    # Reflect and get all table names
+    inspector = sa.inspect(postgres_container.bind)
+    table_names = inspector.get_table_names()
+    
+    if table_names:
+        # Format: "table1", "table2", ...
+        tables_str = ", ".join(f'"{name}"' for name in table_names)
+        postgres_container.execute(
+            sa.text(f'TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;')
+        )
+        postgres_container.commit()
 
 @st.composite
 def valid_existing_country(draw):
@@ -65,4 +73,3 @@ def test_valid_country(country: db_models.Country) -> None:
     db_session.add(country)
     db_session.commit()
     assert country.id is not None
-
