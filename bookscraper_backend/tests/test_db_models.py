@@ -11,6 +11,7 @@ from testcontainers.postgres import PostgresContainer
 from bookscraper_backend.database import db_models
 from alembic.config import Config
 from alembic import command
+from datetime import date
 
 naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
 
@@ -89,13 +90,47 @@ def test_valid_former_country(postgres_container: Session, country: db_models.Co
 @given(invalid_existing_country())
 def test_invalid_existing_country(postgres_container: Session, country: db_models.Country) -> None:
     postgres_container.add(country)
-    with pytest.raises(IntegrityError):
+    with pytest.raises(IntegrityError) as exc:
         postgres_container.commit()
     postgres_container.rollback()
+    assert "chk_country_status" in str(exc.value)
+
 
 @given(invalid_former_country())
 def test_invalid_former_country(postgres_container: Session, country: db_models.Country) -> None:
     postgres_container.add(country)
-    with pytest.raises(IntegrityError):
+    with pytest.raises(IntegrityError) as exc:
         postgres_container.commit()
     postgres_container.rollback()
+    assert "chk_country_status" in str(exc.value)
+
+
+@pytest.mark.parametrize("name", ["A", "B", "Long Country Name"])
+def test_unique_active_country_name(postgres_container: Session, name) -> None:
+    country_1 = db_models.Country(name=name, still_exists=True)
+    postgres_container.add(country_1)
+    postgres_container.commit()
+    assert country_1.id is not None
+    country_2 = db_models.Country(name=name, still_exists=True)
+    postgres_container.add(country_2)
+    with pytest.raises(IntegrityError) as exc:
+        postgres_container.commit()
+    assert "uq_active_country_name" in str(exc.value)
+    postgres_container.rollback()
+    postgres_container.expire_all()
+
+
+
+@pytest.mark.parametrize("name", ["A", "B", "Long Country Name"])
+def test_unique_former_country_name(postgres_container: Session, name) -> None:
+    country_1 = db_models.Country(name=name, still_exists=False, end_date=date.today())
+    postgres_container.add(country_1)
+    postgres_container.commit()
+    assert country_1.id is not None
+    country_2 = db_models.Country(name=name, still_exists=False, end_date=date.today())
+    postgres_container.add(country_2)
+    with pytest.raises(IntegrityError) as exc:
+        postgres_container.commit()
+    assert "uq_inactive_country" in str(exc.value)
+    postgres_container.rollback()
+    postgres_container.expire_all()
