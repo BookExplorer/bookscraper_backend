@@ -47,29 +47,39 @@ def cleanup_tables(postgres_container: Session):
         postgres_container.commit()
 
 
-
 @st.composite
 def valid_existing_country(draw):
     name = draw(naming_strategy)
     return db_models.Country(name=name, still_exists=True, end_date = None)
+
 
 @st.composite
 def invalid_existing_country(draw):
     name = draw(naming_strategy)
     return db_models.Country(name=name, still_exists=True, end_date = draw(st.dates()))
 
+
 @st.composite
 def valid_former_country(draw):
     name = draw(naming_strategy)
     return db_models.Country(name=name, still_exists=False, end_date = draw(st.dates()))
+
 
 @st.composite
 def invalid_former_country(draw):
     name = draw(naming_strategy)
     return db_models.Country(name=name, still_exists=False, end_date = None)
 
+
 @given(valid_existing_country())
-def test_valid_country(postgres_container: Session, country: db_models.Country) -> None:
+def test_valid_existing_country(postgres_container: Session, country: db_models.Country) -> None:
+    postgres_container.add(country)
+    postgres_container.commit()
+    assert country.id is not None
+
+
+@given(valid_former_country())
+def test_valid_former_country(postgres_container: Session, country: db_models.Country) -> None:
     postgres_container.add(country)
     postgres_container.commit()
     assert country.id is not None
