@@ -56,7 +56,6 @@ def db_session_factory(postgres_container):
 @pytest.fixture(scope="function", autouse=True)
 def cleanup_tables(db_session_factory: SessionFactory):
     with db_session_factory() as session:
-        session.rollback()
         inspector: PGInspector = sa.inspect(session.bind) #type: ignore
         table_names = inspector.get_table_names()
         
@@ -115,7 +114,6 @@ def test_invalid_existing_country(db_session_factory: SessionFactory, country: d
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        db_session.rollback()
         assert "chk_country_status" in str(exc.value)
 
 
@@ -125,7 +123,6 @@ def test_invalid_former_country(db_session_factory: SessionFactory, country: db_
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        db_session.rollback()
         assert "chk_country_status" in str(exc.value)
 
 
@@ -141,8 +138,6 @@ def test_unique_active_country_name(db_session_factory: SessionFactory, name: st
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
         assert "uq_active_country_name" in str(exc.value)
-        db_session.rollback()
-        db_session.expire_all()
 
 
 
@@ -158,8 +153,6 @@ def test_unique_former_country_name(db_session_factory: SessionFactory, name: st
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
         assert "uq_inactive_country" in str(exc.value)
-        db_session.rollback()
-        db_session.expire_all()
 
 
 
