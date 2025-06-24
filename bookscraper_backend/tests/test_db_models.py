@@ -129,8 +129,8 @@ def test_invalid_former_country(db_session_factory: SessionFactory, country: db_
         assert "chk_country_status" in str(exc.value)
 
 
-@pytest.mark.parametrize("name", ["A", "B", "Long Country Name"])
-def test_unique_active_country_name(db_session_factory: SessionFactory, name) -> None:
+@given(name=naming_strategy)
+def test_unique_active_country_name(db_session_factory: SessionFactory, name: str) -> None:
     with db_session_factory() as db_session:
         country_1 = db_models.Country(name=name, still_exists=True)
         db_session.add(country_1)
@@ -146,8 +146,8 @@ def test_unique_active_country_name(db_session_factory: SessionFactory, name) ->
 
 
 
-@pytest.mark.parametrize("name", ["A", "B", "Long Country Name"])
-def test_unique_former_country_name(db_session_factory: SessionFactory, name) -> None:
+@given(name=naming_strategy)
+def test_unique_former_country_name(db_session_factory: SessionFactory, name: str) -> None:
     with db_session_factory() as db_session:
         country_1 = db_models.Country(name=name, still_exists=False, end_date=date.today())
         db_session.add(country_1)
@@ -163,8 +163,8 @@ def test_unique_former_country_name(db_session_factory: SessionFactory, name) ->
 
 
 
-@pytest.mark.parametrize("name", ["A", "B", "Long Region Name"])
-def test_valid_region_creation(db_session_factory: SessionFactory, name) -> None:
+@given(name=naming_strategy)
+def test_valid_region_creation(db_session_factory: SessionFactory, name: str) -> None:
     with db_session_factory() as db_session:
         country = db_models.Country(name=name, still_exists = True)
         db_session.add(country)
@@ -177,8 +177,8 @@ def test_valid_region_creation(db_session_factory: SessionFactory, name) -> None
 
 
 
-@pytest.mark.parametrize("name", ["A", "B", "Long long Name"])
-def test_region_unique_constraint(db_session_factory: SessionFactory, name) -> None:
+@given(name=naming_strategy)
+def test_region_unique_constraint(db_session_factory: SessionFactory, name: str) -> None:
     with db_session_factory() as db_session:
         country = db_models.Country(name=name, still_exists = True)
         db_session.add(country)
@@ -193,3 +193,5 @@ def test_region_unique_constraint(db_session_factory: SessionFactory, name) -> N
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
         assert "regions_country_id_name_key" in str(exc.value)
+
+
