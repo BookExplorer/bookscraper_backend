@@ -40,6 +40,7 @@ class Country(BaseModel):
     regions: Mapped[list["Region"]] = relationship(
         back_populates="country"
     )  # Writes to Region.country
+    cities: Mapped[list["City"]] = relationship(back_populates="country")
     still_exists: Mapped[Optional[bool]] = mapped_column(default=True)
     end_date: Mapped[Optional[datetime.date]]
     __table_args__ = (
@@ -67,8 +68,8 @@ class Country(BaseModel):
 class Region(BaseModel):
     __tablename__ = "regions"
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
-    country: Mapped[Country] = relationship(back_populates="regions")
-    cities: Mapped[Optional[list["City"]]] = relationship(back_populates="region")
+    country: Mapped[Country] = relationship(back_populates="regions") # Country.regions
+    cities: Mapped[Optional[list["City"]]] = relationship(back_populates="region") # City.region
     __table_args__ = (UniqueConstraint("country_id", "name"),)
 
 
@@ -77,6 +78,7 @@ class City(BaseModel):
     region_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Region.id))
     region: Mapped[Optional["Region"]] = relationship(back_populates="cities")
     country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
+    country: Mapped[Optional["Country"]] = relationship(back_populates="cities")
     authors: Mapped[Optional[list["Author"]]] = relationship(
         back_populates="birth_city"
     )

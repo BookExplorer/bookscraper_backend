@@ -49,6 +49,7 @@ def db_session_factory(postgres_container):
             yield session
         finally:
             session.rollback()
+            session.expunge_all()
             session.close()
     
     return create_session
@@ -187,4 +188,34 @@ def test_region_unique_constraint(db_session_factory: SessionFactory, name: str)
             db_session.commit()
         assert "regions_country_id_name_key" in str(exc.value)
 
+@given(name=naming_strategy)
+def test_city_check_constraint_nothing(db_session_factory: SessionFactory, name: str) -> None:
+    with db_session_factory() as db_session:
+        country_name = f"country_{name}"
+        region_name = f"region_{name}"
+        city_name = f"city_{name}"
+        country = db_models.Country(name=country_name, still_exists = True)
+        db_session.add(country)
+        db_session.commit()
+        region = db_models.Region(name=region_name, country=country)
+        db_session.add(region)
+        db_session.commit()
+        city_without_anything = db_models.City(name=city_name)
+        db_session.add(city_without_anything)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        assert "cities_check" in str(exc.value)
 
+@given(name=naming_strategy)
+def test_city_check_constraint_both(db_session_factory: SessionFactory, name: str) -> None:
+    with db_session_factory() as db_session:
+        country_name = f"country_{name}"
+        region_name = f"region_{name}"
+        city_name = f"city_{name}"    
+        country = db_models.Country(name=country_name, still_exists = True)
+        region = db_models.Region(name=region_name, country=country)
+        city_with_both = db_models.City(name=city_name, country=country, region=region)
+        db_session.add(city_with_both)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        assert "cities_check" in str(exc.value)
