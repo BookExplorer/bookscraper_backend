@@ -1,5 +1,5 @@
-from hypothesis import given, assume, strategies as st
-from typing import Generator
+from hypothesis import given, assume, HealthCheck, settings, strategies as st
+from typing import Generator, Callable, ContextManager
 import string
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -12,11 +12,18 @@ from bookscraper_backend.database import db_models
 from alembic.config import Config
 from alembic import command
 from datetime import date
+from contextlib import contextmanager
 
 naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
+SessionFactory = Callable[[], ContextManager[Session]]
+
+settings.register_profile(
+    "my_profile", suppress_health_check=[HealthCheck.function_scoped_fixture]
+)
+settings.load_profile("my_profile")
 
 @pytest.fixture(scope="module", autouse=True)
-def postgres_container(request) -> Generator[Session, None, None]:
+def postgres_container(request) -> Generator[sa.Engine, None, None]:
     with PostgresContainer(
         username=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
@@ -27,26 +34,39 @@ def postgres_container(request) -> Generator[Session, None, None]:
         alembic_cfg = Config("alembic.ini")
         alembic_cfg.set_main_option("sqlalchemy.url", postgres.get_connection_url()) 
         command.upgrade(alembic_cfg, "head")
-        SessionLocal = sessionmaker(bind=engine)
+        
+        yield engine
+
+@pytest.fixture
+def db_session_factory(postgres_container):
+    """Returns a context manager factory for creating isolated sessions."""
+    SessionLocal = sessionmaker(bind=postgres_container)
+    
+    @contextmanager
+    def create_session():
         session = SessionLocal()
-
-        yield session
-
-        session.close()
+        try:
+            yield session
+        finally:
+            session.rollback()
+            session.close()
+    
+    return create_session
 
 @pytest.fixture(scope="function", autouse=True)
-def cleanup_tables(postgres_container: Session):
-    postgres_container.rollback()
-    inspector: PGInspector = sa.inspect(postgres_container.bind) #type: ignore
-    table_names = inspector.get_table_names()
-    
-    if table_names:
-        tables_str = ", ".join(f'"{name}"' for name in table_names if name != 'alembic_version')
-        # Use testcontainer session for execution
-        postgres_container.execute(
-            sa.text(f'TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;')
-        )
-        postgres_container.commit()
+def cleanup_tables(db_session_factory: SessionFactory):
+    with db_session_factory() as session:
+        session.rollback()
+        inspector: PGInspector = sa.inspect(session.bind) #type: ignore
+        table_names = inspector.get_table_names()
+        
+        if table_names:
+            tables_str = ", ".join(f'"{name}"' for name in table_names if name != 'alembic_version')
+            # Use testcontainer session for execution
+            session.execute(
+                sa.text(f'TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;')
+            )
+            session.commit()
 
 
 @st.composite
@@ -74,63 +94,102 @@ def invalid_former_country(draw):
 
 
 @given(valid_existing_country())
-def test_valid_existing_country(postgres_container: Session, country: db_models.Country) -> None:
-    postgres_container.add(country)
-    postgres_container.commit()
-    assert country.id is not None
+def test_valid_existing_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+     with db_session_factory() as session:
+        session.add(country)
+        session.commit()
+        assert country.id is not None
 
 
 @given(valid_former_country())
-def test_valid_former_country(postgres_container: Session, country: db_models.Country) -> None:
-    postgres_container.add(country)
-    postgres_container.commit()
-    assert country.id is not None
+def test_valid_former_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+    with db_session_factory() as session:
+        session.add(country)
+        session.commit()
+        assert country.id is not None
 
 
 @given(invalid_existing_country())
-def test_invalid_existing_country(postgres_container: Session, country: db_models.Country) -> None:
-    postgres_container.add(country)
-    with pytest.raises(IntegrityError) as exc:
-        postgres_container.commit()
-    postgres_container.rollback()
-    assert "chk_country_status" in str(exc.value)
+def test_invalid_existing_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+    with db_session_factory() as db_session:
+        db_session.add(country)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        db_session.rollback()
+        assert "chk_country_status" in str(exc.value)
 
 
 @given(invalid_former_country())
-def test_invalid_former_country(postgres_container: Session, country: db_models.Country) -> None:
-    postgres_container.add(country)
-    with pytest.raises(IntegrityError) as exc:
-        postgres_container.commit()
-    postgres_container.rollback()
-    assert "chk_country_status" in str(exc.value)
+def test_invalid_former_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+    with db_session_factory() as db_session:   
+        db_session.add(country)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        db_session.rollback()
+        assert "chk_country_status" in str(exc.value)
 
 
 @pytest.mark.parametrize("name", ["A", "B", "Long Country Name"])
-def test_unique_active_country_name(postgres_container: Session, name) -> None:
-    country_1 = db_models.Country(name=name, still_exists=True)
-    postgres_container.add(country_1)
-    postgres_container.commit()
-    assert country_1.id is not None
-    country_2 = db_models.Country(name=name, still_exists=True)
-    postgres_container.add(country_2)
-    with pytest.raises(IntegrityError) as exc:
-        postgres_container.commit()
-    assert "uq_active_country_name" in str(exc.value)
-    postgres_container.rollback()
-    postgres_container.expire_all()
+def test_unique_active_country_name(db_session_factory: SessionFactory, name) -> None:
+    with db_session_factory() as db_session:
+        country_1 = db_models.Country(name=name, still_exists=True)
+        db_session.add(country_1)
+        db_session.commit()
+        assert country_1.id is not None
+        country_2 = db_models.Country(name=name, still_exists=True)
+        db_session.add(country_2)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        assert "uq_active_country_name" in str(exc.value)
+        db_session.rollback()
+        db_session.expire_all()
 
 
 
 @pytest.mark.parametrize("name", ["A", "B", "Long Country Name"])
-def test_unique_former_country_name(postgres_container: Session, name) -> None:
-    country_1 = db_models.Country(name=name, still_exists=False, end_date=date.today())
-    postgres_container.add(country_1)
-    postgres_container.commit()
-    assert country_1.id is not None
-    country_2 = db_models.Country(name=name, still_exists=False, end_date=date.today())
-    postgres_container.add(country_2)
-    with pytest.raises(IntegrityError) as exc:
-        postgres_container.commit()
-    assert "uq_inactive_country" in str(exc.value)
-    postgres_container.rollback()
-    postgres_container.expire_all()
+def test_unique_former_country_name(db_session_factory: SessionFactory, name) -> None:
+    with db_session_factory() as db_session:
+        country_1 = db_models.Country(name=name, still_exists=False, end_date=date.today())
+        db_session.add(country_1)
+        db_session.commit()
+        assert country_1.id is not None
+        country_2 = db_models.Country(name=name, still_exists=False, end_date=date.today())
+        db_session.add(country_2)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        assert "uq_inactive_country" in str(exc.value)
+        db_session.rollback()
+        db_session.expire_all()
+
+
+
+@pytest.mark.parametrize("name", ["A", "B", "Long Region Name"])
+def test_valid_region_creation(db_session_factory: SessionFactory, name) -> None:
+    with db_session_factory() as db_session:
+        country = db_models.Country(name=name, still_exists = True)
+        db_session.add(country)
+        db_session.commit()
+        region = db_models.Region(name=name, country=country)
+        db_session.add(region)
+        db_session.commit()
+        assert region.id is not None
+        assert region.country.id == country.id
+
+
+
+@pytest.mark.parametrize("name", ["A", "B", "Long long Name"])
+def test_region_unique_constraint(db_session_factory: SessionFactory, name) -> None:
+    with db_session_factory() as db_session:
+        country = db_models.Country(name=name, still_exists = True)
+        db_session.add(country)
+        db_session.commit()
+        region_1 = db_models.Region(name=name, country=country)
+        db_session.add(region_1)
+        db_session.commit()
+        assert region_1.id is not None
+        assert region_1.country.id == country.id
+        region_2 = db_models.Region(name=name, country=country)
+        db_session.add(region_2)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        assert "regions_country_id_name_key" in str(exc.value)
