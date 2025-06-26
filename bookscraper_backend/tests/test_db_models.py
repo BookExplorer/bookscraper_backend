@@ -47,9 +47,10 @@ def db_session_factory(postgres_container):
         session = SessionLocal()
         try:
             yield session
-        finally:
-            session.rollback()
+        except:
             session.expunge_all()
+            session.rollback()
+        finally:
             session.close()
     
     return create_session
@@ -219,3 +220,37 @@ def test_city_check_constraint_both(db_session_factory: SessionFactory, name: st
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
         assert "cities_check" in str(exc.value)
+
+
+@given(name=naming_strategy)
+def test_city_uq_city_region(db_session_factory: SessionFactory, name: str) -> None:
+    with db_session_factory() as db_session:
+        country_name = f"country_{name}"
+        region_name = f"region_{name}"
+        city_name = f"city_{name}"    
+        country = db_models.Country(name=country_name, still_exists = True)
+        region = db_models.Region(name=region_name, country=country)
+        city_1 = db_models.City(name=city_name, region=region)
+        city_2 = db_models.City(name=city_name, region=region)
+        db_session.add(city_1)
+        db_session.commit()
+        db_session.add(city_2)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        assert "uq_city_region" in str(exc.value)
+
+
+@given(name=naming_strategy)
+def test_city_uq_city_country(db_session_factory: SessionFactory, name: str) -> None:
+    with db_session_factory() as db_session:
+        country_name = f"country_{name}"
+        city_name = f"city_{name}"    
+        country = db_models.Country(name=country_name, still_exists = True)
+        city_1 = db_models.City(name=city_name, country=country)
+        city_2 = db_models.City(name=city_name, country=country)
+        db_session.add(city_1)
+        db_session.commit()
+        db_session.add(city_2)
+        with pytest.raises(IntegrityError) as exc:
+            db_session.commit()
+        assert "uq_city_country" in str(exc.value)
