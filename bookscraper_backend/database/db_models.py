@@ -66,7 +66,7 @@ class Country(BaseModel):
 
 class Region(BaseModel):
     __tablename__ = "regions"
-    country_id: Mapped[Optional[int]] = mapped_column(ForeignKey(Country.id))
+    country_id: Mapped[int] = mapped_column(ForeignKey(Country.id))
     country: Mapped[Country] = relationship(back_populates="regions") # Country.regions
     cities: Mapped[Optional[list["City"]]] = relationship(back_populates="region") # City.region
     __table_args__ = (UniqueConstraint("country_id", "name"),)
