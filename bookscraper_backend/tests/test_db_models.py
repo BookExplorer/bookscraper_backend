@@ -69,49 +69,33 @@ def cleanup_tables(db_session_factory: SessionFactory):
             )
             session.commit()
 
-
-@st.composite
-def valid_existing_country(draw):
-    name = draw(naming_strategy)
-    return db_models.Country(name=name, still_exists=True, end_date = None)
-
-
-@st.composite
-def invalid_existing_country(draw):
-    name = draw(naming_strategy)
-    return db_models.Country(name=name, still_exists=True, end_date = draw(st.dates()))
-
-
-@st.composite
-def valid_former_country(draw):
-    name = draw(naming_strategy)
-    return db_models.Country(name=name, still_exists=False, end_date = draw(st.dates()))
-
-
-@st.composite
-def invalid_former_country(draw):
-    name = draw(naming_strategy)
-    return db_models.Country(name=name, still_exists=False, end_date = None)
-
-
-@given(valid_existing_country())
-def test_valid_existing_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+@given(name=naming_strategy)
+def test_valid_existing_country(db_session_factory: SessionFactory, name: str) -> None:
+     country = db_models.Country(name=name, still_exists=True, end_date = None)
      with db_session_factory() as session:
         session.add(country)
         session.commit()
         assert country.id is not None
 
 
-@given(valid_former_country())
-def test_valid_former_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+@given(name=naming_strategy, end_date=st.dates())
+def test_valid_former_country(db_session_factory: SessionFactory, name: str, end_date: date) -> None:
+    """
+    A valid former country can be safely created.
+    """
+    country = db_models.Country(name=name, still_exists=False, end_date = end_date)
     with db_session_factory() as session:
         session.add(country)
         session.commit()
         assert country.id is not None
 
 
-@given(invalid_existing_country())
-def test_invalid_existing_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+@given(name=naming_strategy, end_date=st.dates())
+def test_invalid_existing_country(db_session_factory: SessionFactory, name: str, end_date: date) -> None:
+    """
+    An active country cannot have an end date.
+    """
+    country = db_models.Country(name=name, still_exists=True, end_date = end_date)
     with db_session_factory() as db_session:
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
@@ -119,8 +103,12 @@ def test_invalid_existing_country(db_session_factory: SessionFactory, country: d
         assert "chk_country_status" in str(exc.value)
 
 
-@given(invalid_former_country())
-def test_invalid_former_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
+@given(name=naming_strategy)
+def test_invalid_former_country(db_session_factory: SessionFactory, name: str) -> None:
+    """
+    A former country needs to have an end_date.
+    """
+    country = db_models.Country(name=name, still_exists=False, end_date = None)
     with db_session_factory() as db_session:   
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
@@ -130,6 +118,9 @@ def test_invalid_former_country(db_session_factory: SessionFactory, country: db_
 
 @given(name=naming_strategy)
 def test_unique_active_country_name(db_session_factory: SessionFactory, name: str) -> None:
+    """
+    There can be no two active countries with the same name.
+    """
     with db_session_factory() as db_session:
         country_1 = db_models.Country(name=name, still_exists=True)
         db_session.add(country_1)
@@ -145,6 +136,9 @@ def test_unique_active_country_name(db_session_factory: SessionFactory, name: st
 
 @given(name=naming_strategy)
 def test_unique_former_country_name(db_session_factory: SessionFactory, name: str) -> None:
+    """
+    There can be no two former countries with the same name.
+    """
     with db_session_factory() as db_session:
         country_1 = db_models.Country(name=name, still_exists=False, end_date=date.today())
         db_session.add(country_1)
@@ -160,6 +154,9 @@ def test_unique_former_country_name(db_session_factory: SessionFactory, name: st
 
 @given(name=naming_strategy)
 def test_valid_region_creation(db_session_factory: SessionFactory, name: str) -> None:
+    """
+    A valid region can be safely created.
+    """
     with db_session_factory() as db_session:
         country = db_models.Country(name=name, still_exists = True)
         db_session.add(country)
@@ -174,6 +171,9 @@ def test_valid_region_creation(db_session_factory: SessionFactory, name: str) ->
 
 @given(name=naming_strategy)
 def test_region_unique_constraint(db_session_factory: SessionFactory, name: str) -> None:
+    """
+    Regions inside of a country should be unique by name.
+    """
     with db_session_factory() as db_session:
         country = db_models.Country(name=name, still_exists = True)
         db_session.add(country)
@@ -191,6 +191,9 @@ def test_region_unique_constraint(db_session_factory: SessionFactory, name: str)
 
 @given(name=naming_strategy)
 def test_city_check_constraint_nothing(db_session_factory: SessionFactory, name: str) -> None:
+    """
+    A city must be connected to either a region or a country, it cannot be an orphan.
+    """
     with db_session_factory() as db_session:
         country_name = f"country_{name}"
         region_name = f"region_{name}"
@@ -209,6 +212,9 @@ def test_city_check_constraint_nothing(db_session_factory: SessionFactory, name:
 
 @given(name=naming_strategy)
 def test_city_check_constraint_both(db_session_factory: SessionFactory, name: str) -> None:
+    """
+    A city cannot be directly inside of a country and a region. It's one or the other.
+    """
     with db_session_factory() as db_session:
         country_name = f"country_{name}"
         region_name = f"region_{name}"
@@ -224,6 +230,11 @@ def test_city_check_constraint_both(db_session_factory: SessionFactory, name: st
 
 @given(name=naming_strategy)
 def test_city_uq_city_region(db_session_factory: SessionFactory, name: str) -> None:
+    """Test uniqueness constraint of city.name directly inside of region.
+
+    If a city is directly inside of a region, 
+    then there should be no other city in that region with the same name.
+    """
     with db_session_factory() as db_session:
         country_name = f"country_{name}"
         region_name = f"region_{name}"
@@ -242,6 +253,11 @@ def test_city_uq_city_region(db_session_factory: SessionFactory, name: str) -> N
 
 @given(name=naming_strategy)
 def test_city_uq_city_country(db_session_factory: SessionFactory, name: str) -> None:
+    """Test uniqueness constraint of city.name directly inside of country.
+
+    If a city is not inside of a region but is directly inside of a country, 
+    then there should be no other city in that country with the same name.
+    """
     with db_session_factory() as db_session:
         country_name = f"country_{name}"
         city_name = f"city_{name}"    
