@@ -71,6 +71,9 @@ def cleanup_tables(db_session_factory: SessionFactory):
 
 @given(name=naming_strategy)
 def test_valid_existing_country(db_session_factory: SessionFactory, name: str) -> None:
+     """
+     A valid existing country can be safely created.
+     """
      country = db_models.Country(name=name, still_exists=True, end_date = None)
      with db_session_factory() as session:
         session.add(country)
