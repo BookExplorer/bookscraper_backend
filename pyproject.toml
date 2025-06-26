@@ -3,12 +3,13 @@ name = "bookscraper-backend"
 version = "0.1.0"
 description = ""
 authors = ["Tamir Einhorn Salem <tamtamireinhorn@gmail.com>"]
+packages = [{ include = "bookscraper_backend" }]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
 selenium = "^4.16.0"
-goodreads-scraper = {git = "https://github.com/BookExplorer/Goodreads-Scraper.git"}
+goodreads-scraper = { git = "https://github.com/BookExplorer/Goodreads-Scraper.git" }
 pandas = "^2.2.0"
 pycountry = "^23.12.11"
 sqlalchemy = "^2.0.27"
@@ -22,6 +23,9 @@ neomodel = "^5.3.1"
 testcontainers = "^4.7.1"
 geopy = "^2.4.1"
 dotenv = "^0.9.9"
+alembic = "^1.15.2"
+psycopg2-binary = "^2.9.10"
+schemathesis = "^3.39.16"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
