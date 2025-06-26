@@ -22,7 +22,6 @@ class Base(DeclarativeBase):
     pass
 
 
-# TODO: Test out constraints and classes.
 # TODO: Auto generate migrations from models, assume tests will have all applied?, then run tests
 
 
