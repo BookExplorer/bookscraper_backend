@@ -1,5 +1,5 @@
 from neomodel import db, StructuredNode
-from graph_models import Author, City, Country, Region
+from bookscraper_backend.database.graph_models import Author, City, Country, Region
 from typing import Dict
 from logger import logger
 

@@ -9,7 +9,7 @@ from pydantic import BaseModel, HttpUrl
 from fastapi.middleware.wsgi import WSGIMiddleware
 from werkzeug.middleware.profiler import ProfilerMiddleware
 from bookscraper_backend.setup import setup_db
-from graph_db import create_constraints
+from bookscraper_backend.database.graph_db import create_constraints
 from contextlib import asynccontextmanager
 from logger import logger
 import os

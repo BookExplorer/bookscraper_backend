@@ -3,7 +3,7 @@ from geopy.location import Location
 from goodreads_scraper.scrape import process_goodreads_url, scrape_gr_author
 from typing import Dict, List
 from collections import Counter
-from graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
+from bookscraper_backend.database.graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
 import pycountry
 import cProfile
 import pstats

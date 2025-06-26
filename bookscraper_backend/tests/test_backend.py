@@ -2,7 +2,7 @@ import pytest
 from bookscraper_backend.backend import extract_authors, process_birthplace, get_lat_long_place, process_country_count
 
 from collections import Counter
-from graph_models import Author
+from bookscraper_backend.database.graph_models import Author
 
 # Sample books data
 
