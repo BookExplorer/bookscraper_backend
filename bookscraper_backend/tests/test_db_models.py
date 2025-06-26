@@ -254,3 +254,28 @@ def test_city_uq_city_country(db_session_factory: SessionFactory, name: str) -> 
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
         assert "uq_city_country" in str(exc.value)
+
+
+@given(name=naming_strategy)
+def test_linked_creation(db_session_factory: SessionFactory, name: str) -> None:
+    """This test should verify that commiting just an author linked to other classes creates everything.
+
+    What this means is that an author born in a city X, 
+    inside region Y, inside country Z, can be solely added and commited 
+    without other additions and everything gets created.
+    """
+    with db_session_factory() as db_session:
+        country_name = f"country_{name}"
+        region_name = f"region_{name}"
+        city_name = f"city_{name}"
+        author_name = f"author_{name}"
+        country = db_models.Country(name=country_name, still_exists = True)
+        region = db_models.Region(name=region_name, country=country)
+        city = db_models.Country(name=city_name, region=region)
+        author = db_models.Author(name=author_name, birth_city=city)
+        db_session.add(author)
+        db_session.commit()
+        assert author.id is not None
+        assert city.id is not None
+        assert region.id is not None
+        assert country.id is not None
