@@ -64,12 +64,13 @@ def cleanup_tables(db_session_factory: SessionFactory):
             session.commit()
 
 @st.composite
-def populate_database(draw) -> None:
-    num_countries = draw(st.integers(min_value=10))
-    num_authors = draw(st.integers(min_value=14))
+def random_world(draw) -> list[db_models.Author]:
+    "Strategy that creates a bunch of countries, regions, authors and cities to model a populated db."
+    num_countries = draw(st.integers(min_value=10, max_value=20))
+    num_authors = draw(st.integers(min_value=14, max_value=30))
     countries_names = draw(st.lists(naming_strategy, unique=True, min_size=num_countries, max_size=num_countries))
     authors_names = draw(st.lists(naming_strategy, unique=True, min_size=num_authors, max_size=num_authors))
-    authors_ids = draw(st.lists(st.integers(), unique=True, min_size=num_authors, max_size=num_authors))
+    authors_ids = draw(st.lists(st.integers(min_value=30), unique=True, min_size=num_authors, max_size=num_authors))
     cities = []
     authors = []
     for country_name in countries_names:
@@ -78,19 +79,21 @@ def populate_database(draw) -> None:
         end_date = draw(st.dates()) if not still_exists else None
         country = db_models.Country(name=country_name, end_date=end_date, still_exists=still_exists)
         if has_regions:
-            num_regions = draw(st.integers())
+            num_regions = draw(st.integers(min_value=2, max_value=5))
             region_names = draw(st.lists(naming_strategy, unique=True, min_size=num_regions, max_size=num_regions))
             regions = [db_models.Region(name = region_name, country=country) for region_name in region_names]
             for region in regions:
-                num_cities = draw(st.integers())
+                num_cities = draw(st.integers(min_value=2, max_value=4))
                 city_names = draw(st.lists(naming_strategy, unique=True, min_size=num_cities, max_size=num_cities))
-                cities.append(db_models.City(name=city_name, region=region) for city_name in city_names)
+                region_cities = [db_models.City(name=city_name, region=region) for city_name in city_names]
+                cities.extend(region_cities)
         else:
-            num_cities = draw(st.integers())
+            num_cities = draw(st.integers(min_value=1, max_value=4))
             city_names = draw(st.lists(naming_strategy, unique=True, min_size=num_cities, max_size=num_cities))
-            cities.append(db_models.City(name=city_name, country=country) for city_name in city_names)
+            country_cities =[db_models.City(name=city_name, country=country) for city_name in city_names] 
+            cities.extend(country_cities)
     for author_name, author_id in zip(authors_names, authors_ids):
         author_city = random.choice(cities)
         goodreads_link = f"https://www.goodreads.com/author/show/{author_id}"
         authors.append(db_models.Author(name=author_name, goodreads_link=goodreads_link, birth_city=author_city))
-#https://www.goodreads.com/author/show/696805.Jules_Verne
+    return authors

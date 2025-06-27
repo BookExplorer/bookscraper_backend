@@ -3,7 +3,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from bookscraper_backend.database import db_models
 from datetime import date
-from bookscraper_backend.tests.conftest import SessionFactory, naming_strategy
+from bookscraper_backend.tests.conftest import SessionFactory, naming_strategy, random_world
 
 
 settings.register_profile(
@@ -240,3 +240,13 @@ def test_linked_creation(db_session_factory: SessionFactory, name: str) -> None:
         assert city.id is not None
         assert region.id is not None
         assert country.id is not None
+
+@given(authors=random_world())
+def test_regular_creation(db_session_factory: SessionFactory, authors: list[db_models.Author]) -> None:
+    with db_session_factory() as db_session:
+        db_session.add_all(authors)
+        db_session.commit()
+        for author in authors:
+            assert author.id is not None
+            assert author.birth_city_id is not None
+            assert (author.birth_city.region_id is not None) or (author.birth_city.country_id is not None) #type: ignore
