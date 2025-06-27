@@ -44,6 +44,7 @@ def db_session_factory(postgres_container):
         except:
             session.expunge_all()
             session.rollback()
+            raise
         finally:
             session.close()
     
