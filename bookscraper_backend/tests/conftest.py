@@ -9,9 +9,9 @@ from alembic.config import Config
 from alembic import command
 from contextlib import contextmanager
 import string
-from hypothesis import given, strategies as st
+from hypothesis import strategies as st
 from bookscraper_backend.database import db_models
-import random
+
 
 type SessionFactory = Callable[[], ContextManager[Session]]
 naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
@@ -100,7 +100,7 @@ def random_world(draw) -> list[db_models.Author]:
             country_cities =[db_models.City(name=city_name, country=country) for city_name in city_names] 
             cities.extend(country_cities)
     for author_name, author_id in zip(authors_names, authors_ids):
-        author_city = random.choice(cities)
+        author_city = draw(st.sampled_from(cities))
         goodreads_link = f"https://www.goodreads.com/author/show/{author_id}"
         authors.append(db_models.Author(name=author_name, goodreads_link=goodreads_link, birth_city=author_city))
     return authors
