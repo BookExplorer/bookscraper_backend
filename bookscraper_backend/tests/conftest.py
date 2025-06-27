@@ -17,24 +17,31 @@ type SessionFactory = Callable[[], ContextManager[Session]]
 naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
 
 @pytest.fixture(scope="module", autouse=True)
-def postgres_container(request) -> Generator[sa.Engine, None, None]:
+def postgres_container(request) -> Generator[str, None, None]:
     with PostgresContainer(
         username=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
         dbname=os.getenv("DB_NAME")
     ) as postgres:
         postgres.start()
-        engine = sa.create_engine(postgres.get_connection_url())
-        alembic_cfg = Config("alembic.ini")
-        alembic_cfg.set_main_option("sqlalchemy.url", postgres.get_connection_url()) 
-        command.upgrade(alembic_cfg, "head")
-        
-        yield engine
+        yield postgres.get_connection_url()
+
+@pytest.fixture(scope="module")
+def apply_migrations(postgres_container: str):
+    """Applies Alembic migrations to the test DB."""
+    alembic_cfg = Config("alembic.ini")
+    alembic_cfg.set_main_option("sqlalchemy.url", postgres_container)
+    command.upgrade(alembic_cfg, "head")
+
+
+@pytest.fixture(scope="module")
+def engine(postgres_container: str, apply_migrations) -> sa.Engine:
+    return sa.create_engine(postgres_container)
 
 @pytest.fixture
-def db_session_factory(postgres_container):
+def db_session_factory(engine: sa.Engine):
     """Returns a context manager factory for creating isolated sessions."""
-    SessionLocal = sessionmaker(bind=postgres_container)
+    SessionLocal = sessionmaker(bind=engine)
     
     @contextmanager
     def create_session():
@@ -44,7 +51,6 @@ def db_session_factory(postgres_container):
         except:
             session.expunge_all()
             session.rollback()
-            raise
         finally:
             session.close()
     
