@@ -26,7 +26,7 @@ class BaseModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
 
-    def __repr__(self):
+    def __str__(self):
         return f"Class: {type(self).__name__} Id: {self.id}, name: {self.name}"
 
 
