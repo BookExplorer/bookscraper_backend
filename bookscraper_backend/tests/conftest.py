@@ -56,19 +56,25 @@ def db_session_factory(engine: sa.Engine):
     
     return create_session
 
+
+def cleanup_tables(session: Session) -> None:
+    inspector: PGInspector = sa.inspect(session.bind) #type: ignore
+    table_names = inspector.get_table_names()
+    
+    if table_names:
+        tables_str = ", ".join(f'"{name}"' for name in table_names if name != 'alembic_version')
+        # Use testcontainer session for execution
+        session.execute(
+            sa.text(f'TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;')
+        )
+        session.commit()
+
+
 @pytest.fixture(scope="function", autouse=True)
-def cleanup_tables(db_session_factory: SessionFactory):
+def cleanup_tables_fixture(db_session_factory: SessionFactory):
     with db_session_factory() as session:
-        inspector: PGInspector = sa.inspect(session.bind) #type: ignore
-        table_names = inspector.get_table_names()
-        
-        if table_names:
-            tables_str = ", ".join(f'"{name}"' for name in table_names if name != 'alembic_version')
-            # Use testcontainer session for execution
-            session.execute(
-                sa.text(f'TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;')
-            )
-            session.commit()
+        cleanup_tables(session)
+
 
 @st.composite
 def random_world(draw) -> list[db_models.Author]:
