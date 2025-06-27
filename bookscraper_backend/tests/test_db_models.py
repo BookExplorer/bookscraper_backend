@@ -1,13 +1,10 @@
 from hypothesis import given, HealthCheck, settings, strategies as st
-import string
 import pytest
 from sqlalchemy.exc import IntegrityError
 from bookscraper_backend.database import db_models
 from datetime import date
-from bookscraper_backend.tests.conftest import SessionFactory
+from bookscraper_backend.tests.conftest import SessionFactory, naming_strategy
 
-
-naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
 
 settings.register_profile(
     "my_profile", suppress_health_check=[HealthCheck.function_scoped_fixture]
