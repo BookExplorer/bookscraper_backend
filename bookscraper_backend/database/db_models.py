@@ -12,7 +12,7 @@ from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     mapped_column,
-    relationship,
+    relationship
 )
 
 import datetime
@@ -20,10 +20,6 @@ import datetime
 
 class Base(DeclarativeBase):
     pass
-
-
-# TODO: Auto generate migrations from models, assume tests will have all applied?, then run tests
-
 
 class BaseModel(Base):
     __abstract__ = True  # This allows it to be inherited by other classes.
@@ -40,8 +36,8 @@ class Country(BaseModel):
         back_populates="country"
     )  # Writes to Region.country
     cities: Mapped[list["City"]] = relationship(back_populates="country")
-    still_exists: Mapped[Optional[bool]] = mapped_column(default=True)
     end_date: Mapped[Optional[datetime.date]]
+    still_exists: Mapped[Optional[bool]] = mapped_column(default=True)
     __table_args__ = (
         Index(
             "uq_inactive_country",
