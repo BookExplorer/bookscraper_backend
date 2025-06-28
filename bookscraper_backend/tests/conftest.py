@@ -108,5 +108,5 @@ def random_world(draw) -> list[db_models.Author]:
     for author_name, author_id in zip(authors_names, authors_ids):
         author_city = draw(st.sampled_from(cities))
         goodreads_link = f"https://www.goodreads.com/author/show/{author_id}"
-        authors.append(db_models.Author(name=author_name, goodreads_link=goodreads_link, birth_city=author_city))
+        authors.append(db_models.Author(name=author_name, goodreads_link=goodreads_link, birth_city=author_city, goodreads_id=author_id))
     return authors

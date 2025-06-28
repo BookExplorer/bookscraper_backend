@@ -23,14 +23,15 @@ def fetch_all_authors(db_session: Session) -> Sequence[db_models.Author]:
     return results
 
 
+def find_missing_authors(db_authors: Sequence[db_models.Author], scrapped_authors: Counter) -> list[tuple]:
+    existing_ids = [author.goodreads_id for author in db_authors]
+    missing_authors = [item for item in scrapped_authors.items() if item[0][0] not in existing_ids]
+    return missing_authors
 
 def generate_country_count(books_per_author: Counter):
     # If all authors were in db, this is just queries.
     # IDEA: Get authors table in memory.
     # See everyone that is not there.
     # Scrape THOSE authors, then do the query with all joins.
-    all_authors_query = sa.select(db_models.Author)
-    with Session(bind=ENGINE) as db_session:
-        all_authors = db_session.execute(all_authors_query).scalars().all()
     
     pass
