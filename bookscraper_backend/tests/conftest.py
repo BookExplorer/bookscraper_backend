@@ -1,4 +1,4 @@
-from typing import Generator, Callable, ContextManager
+from typing import Generator, Callable, ContextManager, TypedDict
 import pytest
 import os
 import sqlalchemy as sa
@@ -15,6 +15,13 @@ from bookscraper_backend.database import db_models
 
 type SessionFactory = Callable[[], ContextManager[Session]]
 naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
+
+class World(TypedDict):
+    authors: list[db_models.Author]
+    countries: list[db_models.Country]
+    regions: list[db_models.Region]
+    cities: list[db_models.City]
+
 
 @pytest.fixture(scope="module", autouse=True)
 def postgres_container(request) -> Generator[str, None, None]:
@@ -77,7 +84,7 @@ def cleanup_tables_fixture(db_session_factory: SessionFactory):
 
 
 @st.composite
-def random_world(draw) -> list[db_models.Author]:
+def random_world(draw) -> World:
     "Strategy that creates a bunch of countries, regions, authors and cities to model a populated db."
     num_countries = draw(st.integers(min_value=10, max_value=20))
     num_authors = draw(st.integers(min_value=14, max_value=30))
@@ -86,15 +93,19 @@ def random_world(draw) -> list[db_models.Author]:
     authors_ids = draw(st.lists(st.integers(min_value=30), unique=True, min_size=num_authors, max_size=num_authors))
     cities = []
     authors = []
+    countries = []
+    all_regions = []
     for country_name in countries_names:
         still_exists = draw(st.booleans())
         has_regions = draw(st.booleans())
         end_date = draw(st.dates()) if not still_exists else None
         country = db_models.Country(name=country_name, end_date=end_date, still_exists=still_exists)
+        countries.append(country)
         if has_regions:
             num_regions = draw(st.integers(min_value=2, max_value=5))
             region_names = draw(st.lists(naming_strategy, unique=True, min_size=num_regions, max_size=num_regions))
             regions = [db_models.Region(name = region_name, country=country) for region_name in region_names]
+            all_regions.extend(regions)
             for region in regions:
                 num_cities = draw(st.integers(min_value=2, max_value=4))
                 city_names = draw(st.lists(naming_strategy, unique=True, min_size=num_cities, max_size=num_cities))
@@ -109,4 +120,4 @@ def random_world(draw) -> list[db_models.Author]:
         author_city = draw(st.sampled_from(cities))
         goodreads_link = f"https://www.goodreads.com/author/show/{author_id}"
         authors.append(db_models.Author(name=author_name, goodreads_link=goodreads_link, birth_city=author_city, goodreads_id=author_id))
-    return authors
+    return {"authors": authors, "countries": countries, "regions":all_regions, "cities":cities}
