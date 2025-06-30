@@ -2,6 +2,7 @@ from bookscraper_backend.tests.conftest import SessionFactory, random_world, cle
 from hypothesis import given, settings, HealthCheck
 from bookscraper_backend.database import db_models, db_logic
 from collections import Counter
+import sqlalchemy as sa
 
 settings.register_profile(
     "my_profile", suppress_health_check=[HealthCheck.function_scoped_fixture]
@@ -46,3 +47,25 @@ def test_insert_geo_dict(db_session_factory: SessionFactory) -> None:
         cleanup_tables(db_session)
         simple_geo_dict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
         db_logic.insert_geo_dict(db_session,simple_geo_dict)
+        results = db_session.execute(sa.select(db_models.Country)).scalars().one()
+        assert results is not None
+        assert results.id == 1
+
+@given(authors = random_world())
+def test_double_insertion_geo_dict(db_session_factory: SessionFactory, authors: list[db_models.Author]) -> None:
+        with db_session_factory() as db_session:
+            cleanup_tables(db_session)
+            db_session.add_all(authors)
+            db_session.commit()
+            simple_geo_dict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
+            db_logic.insert_geo_dict(db_session,simple_geo_dict)
+            db_logic.insert_geo_dict(db_session,simple_geo_dict)
+            country_results = db_session.execute(sa.select(db_models.Country)).scalars().all()
+            assert country_results is not None
+            assert len(country_results) == 1
+            region_results = db_session.execute(sa.select(db_models.Region)).scalars().all()
+            assert region_results is not None
+            assert len(region_results) == 1
+            city_ressults = db_session.execute(sa.select(db_models.City)).scalars().all()
+            assert city_ressults is not None
+            assert len(city_ressults) == 1
