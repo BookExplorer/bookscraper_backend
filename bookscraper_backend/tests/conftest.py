@@ -16,11 +16,6 @@ from bookscraper_backend.database import db_models
 type SessionFactory = Callable[[], ContextManager[Session]]
 naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
 
-class World(TypedDict):
-    authors: list[db_models.Author]
-    countries: list[db_models.Country]
-    regions: list[db_models.Region]
-    cities: list[db_models.City]
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -84,7 +79,7 @@ def cleanup_tables_fixture(db_session_factory: SessionFactory):
 
 
 @st.composite
-def random_world(draw) -> World:
+def random_world(draw) -> list[db_models.Author]:
     "Strategy that creates a bunch of countries, regions, authors and cities to model a populated db."
     num_countries = draw(st.integers(min_value=10, max_value=20))
     num_authors = draw(st.integers(min_value=14, max_value=30))
@@ -120,4 +115,4 @@ def random_world(draw) -> World:
         author_city = draw(st.sampled_from(cities))
         goodreads_link = f"https://www.goodreads.com/author/show/{author_id}"
         authors.append(db_models.Author(name=author_name, goodreads_link=goodreads_link, birth_city=author_city, goodreads_id=author_id))
-    return {"authors": authors, "countries": countries, "regions":all_regions, "cities":cities}
+    return authors
