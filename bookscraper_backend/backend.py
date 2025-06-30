@@ -1,7 +1,7 @@
 import geopy.geocoders
 from geopy.location import Location
 from goodreads_scraper.scrape import process_goodreads_url, scrape_gr_author
-from typing import Dict, List
+from typing import Dict, List, TypedDict
 from collections import Counter
 from bookscraper_backend.database.graph_db import insert_everything, fetch_author_by_gr_id, get_author_place
 import pycountry
@@ -13,6 +13,12 @@ from logger import logger
 profiler = cProfile.Profile()
 profiler.enable()
 
+class GeoDict(TypedDict):
+    country: str
+    region: str | None
+    city: str
+    latitude: float
+    longitude: float
 
 def extract_authors(books: List[Dict[str, str]]) -> Counter:
     """From the books list, generate a Counter object with the number of books per author.
@@ -83,7 +89,7 @@ def process_country_count(country_count: Dict[str, int]) -> Dict[str, int]:
     return complete_data
 
 
-def process_birthplace(birthplace: str | None) -> Dict[str, str | float]| None:
+def process_birthplace(birthplace: str | None) -> GeoDict| None:
     """Processes the birthplac string from Goodreads if it exists and returns a dictionary with attributes.
 
     Args:
@@ -95,7 +101,7 @@ def process_birthplace(birthplace: str | None) -> Dict[str, str | float]| None:
     if birthplace:
         
         split_birthplace = birthplace.split(",")
-        geo_dict: Dict[str, str| float] = {}
+        geo_dict: GeoDict = {}
         geo_dict["city"] = split_birthplace[0].strip()
         geo_dict["country"] = split_birthplace[-1].strip()
         lat_long = get_lat_long_place(birthplace)
