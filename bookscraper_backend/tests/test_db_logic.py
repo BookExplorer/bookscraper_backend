@@ -39,3 +39,10 @@ def test_generate_country_count(db_session_factory: SessionFactory, authors: lis
         db_session.add_all(authors)
         db_session.commit()
         db_logic.generate_country_count(db_session, scrapped_authors)
+
+
+def test_insert_geo_dict(db_session_factory: SessionFactory) -> None:
+    with db_session_factory() as db_session:
+        cleanup_tables(db_session)
+        simple_geo_dict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
+        db_logic.insert_geo_dict(db_session,simple_geo_dict)
