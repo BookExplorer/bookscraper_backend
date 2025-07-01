@@ -225,6 +225,7 @@ def test_linked_creation(db_session_factory: SessionFactory, name: str) -> None:
     inside region Y, inside country Z, can be solely added and commited 
     without other additions and everything gets created.
     """
+    #This test is weird and actually shrinking, loops back after author???
     with db_session_factory() as db_session:
         country_name = f"country_{name}"
         region_name = f"region_{name}"
@@ -232,14 +233,18 @@ def test_linked_creation(db_session_factory: SessionFactory, name: str) -> None:
         author_name = f"author_{name}"
         country = db_models.Country(name=country_name, still_exists = True)
         region = db_models.Region(name=region_name, country=country)
-        city = db_models.Country(name=city_name, region=region)
+        city = db_models.City(name=city_name, region=region)
         author = db_models.Author(name=author_name, birth_city=city)
         db_session.add(author)
         db_session.commit()
-        assert author.id is not None
-        assert city.id is not None
-        assert region.id is not None
-        assert country.id is not None
+        other_author = db_models.Author(name=f"{author_name}a", birth_city=city)
+        db_session.add(other_author)
+        db_session.commit()
+        assert author.id == 1
+        assert city.id == 1
+        assert region.id ==1
+        assert country.id == 1
+        assert other_author.id == 2
 
 @given(authors=random_world())
 def test_regular_creation(db_session_factory: SessionFactory, authors: list[db_models.Author]) -> None:
