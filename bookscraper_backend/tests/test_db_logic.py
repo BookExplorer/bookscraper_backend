@@ -46,7 +46,7 @@ def test_insert_geo_dict(db_session_factory: SessionFactory) -> None:
     with db_session_factory() as db_session:
         cleanup_tables(db_session)
         simple_geo_dict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
-        db_logic.insert_geo_dict(db_session,simple_geo_dict)
+        city =  db_logic.process_geo_dict(db_session,simple_geo_dict)
         results = db_session.execute(sa.select(db_models.Country)).scalars().one()
         assert results is not None
         assert results.id == 1
@@ -58,8 +58,8 @@ def test_double_insertion_geo_dict(db_session_factory: SessionFactory, authors: 
             db_session.add_all(authors)
             db_session.commit()
             simple_geo_dict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
-            db_logic.insert_geo_dict(db_session,simple_geo_dict)
-            db_logic.insert_geo_dict(db_session,simple_geo_dict)
+            db_logic.process_geo_dict(db_session,simple_geo_dict)
+            db_logic.process_geo_dict(db_session,simple_geo_dict)
             country_results = db_session.execute(sa.select(db_models.Country)).scalars().all()
             assert country_results is not None
             assert len(country_results) == 1

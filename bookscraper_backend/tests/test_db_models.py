@@ -225,7 +225,8 @@ def test_linked_creation(db_session_factory: SessionFactory, name: str) -> None:
     inside region Y, inside country Z, can be solely added and commited 
     without other additions and everything gets created.
     """
-    #This test is weird and actually shrinking, loops back after author???
+    #This test is weird and actually shrinking, loops back after author??? 
+    #FIXME: Why does shrinkage not fail???
     with db_session_factory() as db_session:
         country_name = f"country_{name}"
         region_name = f"region_{name}"
