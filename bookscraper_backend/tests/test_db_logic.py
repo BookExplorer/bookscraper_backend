@@ -66,6 +66,6 @@ def test_double_insertion_geo_dict(db_session_factory: SessionFactory, authors: 
             region_results = db_session.execute(sa.select(db_models.Region)).scalars().all()
             assert region_results is not None
             assert len(region_results) == 1
-            city_ressults = db_session.execute(sa.select(db_models.City)).scalars().all()
-            assert city_ressults is not None
-            assert len(city_ressults) == 1
+            city_results = db_session.execute(sa.select(db_models.City)).scalars().all()
+            assert city_results is not None
+            assert len(city_results) == 1
