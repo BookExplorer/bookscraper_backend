@@ -118,20 +118,17 @@ def random_world(draw) -> list[db_models.Author]:
     return authors
 
 @pytest.fixture
-def sample_data(db_session_factory: SessionFactory) -> list[db_models.Author]:
+def sample_data(db_session_factory: SessionFactory) -> None:
     """Fixture to set up sample data for testing."""
-    with db_session_factory() as session:
-        country = db_models.Country(
+    country = db_models.Country(
             name="Testland", 
             still_exists=True
         )
-        session.add(country)
-        city = db_models.City(
+    city = db_models.City(
             name="Testville", 
             country=country
         )
-        session.add(city)
-        authors = [
+    authors = [
             db_models.Author(
                 name="Author One",
                 goodreads_link="https://www.goodreads.com/author/show/1",
@@ -145,6 +142,8 @@ def sample_data(db_session_factory: SessionFactory) -> list[db_models.Author]:
                 goodreads_id=2
             )
         ]
+    with db_session_factory() as session:
+        session.add(country)
+        session.add(city)
         session.add_all(authors)
         session.commit()
-    return authors

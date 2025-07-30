@@ -19,14 +19,14 @@ def test_fetch_all_authors(db_session_factory: SessionFactory, sample_data: None
 
 
 
-@given(world=random_world())
-def test_find_missing_authors(db_session_factory: SessionFactory, authors: list[db_models.Author]) -> None:
-    
+def test_find_missing_authors(db_session_factory: SessionFactory, sample_data: None) -> None:
     # We get a few authors that are not in the db for sure.
+    with db_session_factory() as db_session:
+        db_authors = db_session.query(db_models.Author).all()
     scrapped_authors = Counter({(696805, 'https://www.goodreads.com/author/show/696805.Jules_Verne', 'Jules Vernes'): 2, (22458, 'https://www.goodreads.com/author/show/22458.Machado_de_Assis', 'Machado de Assis'): 1})
-    existing_ids = [author.goodreads_id for author in authors]
+    existing_ids = [1,2]
     expected_missing_authors = [item for item in scrapped_authors.items() if item[0][0] not in existing_ids]
-    actual_missing_authors =db_logic.find_missing_authors(db_authors=authors, scrapped_authors=scrapped_authors) 
+    actual_missing_authors =db_logic.find_missing_authors(db_authors=db_authors, scrapped_authors=scrapped_authors) 
     assert actual_missing_authors == expected_missing_authors
 
 @given(authors = random_world())
