@@ -9,15 +9,13 @@ settings.register_profile(
 )
 settings.load_profile("my_profile")
 #TODO: Remove this. Hypothesis is simply too cumbersome for use in this project.
-@given(authors = random_world())
-def test_fetch_all_authors(db_session_factory: SessionFactory, authors: list[db_models.Author]) -> None:
-    print(f"Running test with {len(authors)} authors")
+
+def test_fetch_all_authors(db_session_factory: SessionFactory, sample_data: None) -> None:
     with db_session_factory() as db_session:
         cleanup_tables(db_session) # A single session has multiple examples due to shrinkage, so better cleanup!
-        db_session.add_all(authors)
         db_session.commit()
         all_authors = db_logic.fetch_all_authors(db_session)
-        assert len(all_authors) == len(authors)
+        assert len(all_authors) == 2
 
 
 
