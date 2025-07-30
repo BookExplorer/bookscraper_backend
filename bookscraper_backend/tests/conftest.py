@@ -118,7 +118,7 @@ def random_world(draw) -> list[db_models.Author]:
     return authors
 
 @pytest.fixture
-def sample_data(db_session_factory: SessionFactory) -> None:
+def sample_data(db_session_factory: SessionFactory) -> list[db_models.Author]:
     """Fixture to set up sample data for testing."""
     with db_session_factory() as session:
         country = db_models.Country(
@@ -147,3 +147,4 @@ def sample_data(db_session_factory: SessionFactory) -> None:
         ]
         session.add_all(authors)
         session.commit()
+    return authors
