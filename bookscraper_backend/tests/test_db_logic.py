@@ -1,6 +1,7 @@
 from bookscraper_backend.tests.conftest import SessionFactory, random_world, cleanup_tables
 from hypothesis import given, settings, HealthCheck
 from bookscraper_backend.database import db_models, db_logic
+from bookscraper_backend.backend import GeoDict
 from collections import Counter
 import sqlalchemy as sa
 
@@ -38,13 +39,14 @@ def test_generate_country_count(db_session_factory: SessionFactory, authors: lis
         db_session.add_all(authors)
         db_session.commit()
         db_logic.generate_country_count(db_session, scrapped_authors)
+        #TODO assert something here, get rid of given.
 
 
 def test_insert_geo_dict(db_session_factory: SessionFactory) -> None:
     with db_session_factory() as db_session:
         cleanup_tables(db_session)
-        simple_geo_dict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
-        city =  db_logic.process_geo_dict(db_session,simple_geo_dict)
+        simple_geo_dict: GeoDict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
+        db_logic.process_geo_dict(db_session,simple_geo_dict)
         results = db_session.execute(sa.select(db_models.Country)).scalars().one()
         assert results is not None
         assert results.id == 1
@@ -55,7 +57,7 @@ def test_double_insertion_geo_dict(db_session_factory: SessionFactory, authors: 
             cleanup_tables(db_session)
             db_session.add_all(authors)
             db_session.commit()
-            simple_geo_dict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
+            simple_geo_dict: GeoDict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
             db_logic.process_geo_dict(db_session,simple_geo_dict)
             db_logic.process_geo_dict(db_session,simple_geo_dict)
             country_results = db_session.execute(sa.select(db_models.Country)).scalars().all()
