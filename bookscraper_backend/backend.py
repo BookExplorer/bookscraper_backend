@@ -17,8 +17,8 @@ class GeoDict(TypedDict):
     country: str
     region: str | None
     city: str
-    latitude: float
-    longitude: float
+    latitude: float | None
+    longitude: float | None
 
 def extract_authors(books: List[Dict[str, str]]) -> Counter:
     """From the books list, generate a Counter object with the number of books per author.
@@ -99,17 +99,19 @@ def process_birthplace(birthplace: str | None) -> GeoDict| None:
         Dict[str, str] | None: Dictionary with at least country and city geographical attributes.
     """
     if birthplace:
-        
         split_birthplace = birthplace.split(",")
-        geo_dict: GeoDict = {}
-        geo_dict["city"] = split_birthplace[0].strip()
-        geo_dict["country"] = split_birthplace[-1].strip()
+        latitude = None
+        longitude = None
+        region = None
+        city = split_birthplace[0].strip()
+        country = split_birthplace[-1].strip()
         lat_long = get_lat_long_place(birthplace)
         if len(split_birthplace) > 2:
-            geo_dict["region"] = split_birthplace[1].strip()
+            region = split_birthplace[1].strip()  
         if lat_long:
-            geo_dict["latitude"] = lat_long[0]
-            geo_dict["longitude"] = lat_long[1]
+            latitude = lat_long[0]
+            longitude = lat_long[1]
+        geo_dict: GeoDict = {"city":city, "country":country, "latitude":latitude, "longitude": longitude, "region": region}
         return geo_dict
     return None
 
