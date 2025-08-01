@@ -65,7 +65,7 @@ def test_invalid_existing_country(db_session_factory: SessionFactory, country: d
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        assert "chk_country_status" in str(exc.value)
+    assert "chk_country_status" in str(exc.value)
 
 
 @pytest.mark.parametrize("country", INVALID_FORMER_COUNTRIES)
@@ -77,7 +77,7 @@ def test_invalid_former_country(db_session_factory: SessionFactory, country: db_
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        assert "chk_country_status" in str(exc.value)
+    assert "chk_country_status" in str(exc.value)
 
 
 @pytest.mark.parametrize("country", VALID_EXISTING_COUNTRIES)
@@ -97,7 +97,7 @@ def test_unique_active_country_name(db_session_factory: SessionFactory, country:
         db_session.add(duplicate)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        assert "uq_active_country_name" in str(exc.value)
+    assert "uq_active_country_name" in str(exc.value)
 
 
 
@@ -114,20 +114,19 @@ def test_unique_former_country_name(db_session_factory: SessionFactory, country:
         db_session.add(duplicate)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        assert "uq_inactive_country" in str(exc.value)
+    assert "uq_inactive_country" in str(exc.value)
 
 
 
-@given(name=naming_strategy)
-def test_valid_region_creation(db_session_factory: SessionFactory, name: str) -> None:
+@pytest.mark.parametrize("country", VALID_FORMER_COUNTRIES+VALID_EXISTING_COUNTRIES)
+def test_valid_region_creation(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     A valid region can be safely created.
     """
     with db_session_factory() as db_session:
-        country = db_models.Country(name=name, still_exists = True)
         db_session.add(country)
         db_session.commit()
-        region = db_models.Region(name=name, country=country)
+        region = db_models.Region(name=country.name, country=country)
         db_session.add(region)
         db_session.commit()
         assert region.id is not None
@@ -135,46 +134,42 @@ def test_valid_region_creation(db_session_factory: SessionFactory, name: str) ->
 
 
 
-@given(name=naming_strategy)
-def test_region_unique_constraint(db_session_factory: SessionFactory, name: str) -> None:
+@pytest.mark.parametrize("country", VALID_FORMER_COUNTRIES+VALID_EXISTING_COUNTRIES)
+def test_region_unique_constraint(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     Regions inside of a country should be unique by name.
     """
     with db_session_factory() as db_session:
-        country = db_models.Country(name=name, still_exists = True)
         db_session.add(country)
         db_session.commit()
-        region_1 = db_models.Region(name=name, country=country)
+        region_1 = db_models.Region(name=country.name, country=country)
         db_session.add(region_1)
         db_session.commit()
         assert region_1.id is not None
         assert region_1.country.id == country.id
-        region_2 = db_models.Region(name=name, country=country)
+        region_2 = db_models.Region(name=country.name, country=country)
         db_session.add(region_2)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        assert "regions_country_id_name_key" in str(exc.value)
+    assert "regions_country_id_name_key" in str(exc.value)
 
-@given(name=naming_strategy)
-def test_city_check_constraint_nothing(db_session_factory: SessionFactory, name: str) -> None:
+
+@pytest.mark.parametrize("country", VALID_FORMER_COUNTRIES+VALID_EXISTING_COUNTRIES)
+def test_city_check_constraint_nothing(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     A city must be connected to either a region or a country, it cannot be an orphan.
     """
     with db_session_factory() as db_session:
-        country_name = f"country_{name}"
-        region_name = f"region_{name}"
-        city_name = f"city_{name}"
-        country = db_models.Country(name=country_name, still_exists = True)
         db_session.add(country)
         db_session.commit()
-        region = db_models.Region(name=region_name, country=country)
+        region = db_models.Region(name=country.name, country=country)
         db_session.add(region)
         db_session.commit()
-        city_without_anything = db_models.City(name=city_name)
+        city_without_anything = db_models.City(name=country.name)
         db_session.add(city_without_anything)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        assert "cities_check" in str(exc.value)
+    assert "cities_check" in str(exc.value)
 
 @given(name=naming_strategy)
 def test_city_check_constraint_both(db_session_factory: SessionFactory, name: str) -> None:
@@ -191,7 +186,7 @@ def test_city_check_constraint_both(db_session_factory: SessionFactory, name: st
         db_session.add(city_with_both)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
-        assert "cities_check" in str(exc.value)
+    assert "cities_check" in str(exc.value)
 
 
 @given(name=naming_strategy)
