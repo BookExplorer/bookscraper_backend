@@ -51,12 +51,9 @@ def test_insert_geo_dict(db_session_factory: SessionFactory) -> None:
         assert results is not None
         assert results.id == 1
 
-@given(authors = random_world())
-def test_double_insertion_geo_dict(db_session_factory: SessionFactory, authors: list[db_models.Author]) -> None:
+def test_double_insertion_geo_dict(db_session_factory: SessionFactory, sample_data: None) -> None:
         with db_session_factory() as db_session:
             cleanup_tables(db_session)
-            db_session.add_all(authors)
-            db_session.commit()
             simple_geo_dict: GeoDict =  {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936}
             db_logic.process_geo_dict(db_session,simple_geo_dict)
             db_logic.process_geo_dict(db_session,simple_geo_dict)
