@@ -80,36 +80,38 @@ def test_invalid_former_country(db_session_factory: SessionFactory, country: db_
         assert "chk_country_status" in str(exc.value)
 
 
-@given(name=naming_strategy)
-def test_unique_active_country_name(db_session_factory: SessionFactory, name: str) -> None:
+@pytest.mark.parametrize("country", VALID_EXISTING_COUNTRIES)
+def test_unique_active_country_name(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     There can be no two active countries with the same name.
     """
     with db_session_factory() as db_session:
-        country_1 = db_models.Country(name=name, still_exists=True)
-        db_session.add(country_1)
+        db_session.add(country)
         db_session.commit()
-        assert country_1.id is not None
-        country_2 = db_models.Country(name=name, still_exists=True)
-        db_session.add(country_2)
+        assert country.id is not None
+        duplicate = db_models.Country(
+            name=country.name,  # Same name!
+            still_exists=True,  # Must be active
+            end_date=None
+        )
+        db_session.add(duplicate)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
         assert "uq_active_country_name" in str(exc.value)
 
 
 
-@given(name=naming_strategy)
-def test_unique_former_country_name(db_session_factory: SessionFactory, name: str) -> None:
+@pytest.mark.parametrize("country", VALID_FORMER_COUNTRIES)
+def test_unique_former_country_name(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     There can be no two former countries with the same name.
     """
     with db_session_factory() as db_session:
-        country_1 = db_models.Country(name=name, still_exists=False, end_date=date.today())
-        db_session.add(country_1)
+        db_session.add(country)
         db_session.commit()
-        assert country_1.id is not None
-        country_2 = db_models.Country(name=name, still_exists=False, end_date=date.today())
-        db_session.add(country_2)
+        assert country.id is not None
+        duplicate = db_models.Country(name=country.name, still_exists=False, end_date=date.today())
+        db_session.add(duplicate)
         with pytest.raises(IntegrityError) as exc:
             db_session.commit()
         assert "uq_inactive_country" in str(exc.value)
