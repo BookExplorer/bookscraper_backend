@@ -1,46 +1,66 @@
-from hypothesis import given, HealthCheck, settings, strategies as st
+from hypothesis import given, HealthCheck, settings
 import pytest
 from sqlalchemy.exc import IntegrityError
 from bookscraper_backend.database import db_models
 from datetime import date
 from bookscraper_backend.tests.conftest import SessionFactory, naming_strategy, random_world
 
+VALID_EXISTING_COUNTRIES = [
+    db_models.Country(name="United States", still_exists=True, end_date=None),
+    db_models.Country(name="France", still_exists=True, end_date=None),
+    db_models.Country(name="Côte d'Ivoire", still_exists=True, end_date=None),
+]
 
+INVALID_EXISTING_COUNTRIES = [
+    db_models.Country(name="United States", still_exists=True, end_date=date.today()),
+    db_models.Country(name="France", still_exists=True, end_date=date.today()),
+    db_models.Country(name="Côte d'Ivoire", still_exists=True, end_date=date.today()),
+]
+
+VALID_FORMER_COUNTRIES = [
+    db_models.Country(name="Soviet Union", still_exists=False, end_date=date(1991, 12, 26)),
+    db_models.Country(name="Yugoslavia", still_exists=False, end_date=date(1992, 4, 27)),
+    db_models.Country(name="East Germany", still_exists=False, end_date=date(1990, 10, 3)),
+]
+
+INVALID_FORMER_COUNTRIES = [
+    db_models.Country(name="Soviet Union", still_exists=False, end_date=None),
+    db_models.Country(name="Yugoslavia", still_exists=False, end_date=None),
+    db_models.Country(name="East Germany", still_exists=False, end_date=None),
+]
 settings.register_profile(
     "my_profile", suppress_health_check=[HealthCheck.function_scoped_fixture]
 )
 settings.load_profile("my_profile")
 
-@given(name=naming_strategy)
-def test_valid_existing_country(db_session_factory: SessionFactory, name: str) -> None:
+@pytest.mark.parametrize("country", VALID_EXISTING_COUNTRIES)
+def test_valid_existing_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
      """
      A valid existing country can be safely created.
      """
-     country = db_models.Country(name=name, still_exists=True, end_date = None)
      with db_session_factory() as session:
         session.add(country)
         session.commit()
         assert country.id is not None
 
 
-@given(name=naming_strategy, end_date=st.dates())
-def test_valid_former_country(db_session_factory: SessionFactory, name: str, end_date: date) -> None:
+@pytest.mark.parametrize("country", VALID_FORMER_COUNTRIES)
+def test_valid_former_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     A valid former country can be safely created.
     """
-    country = db_models.Country(name=name, still_exists=False, end_date = end_date)
     with db_session_factory() as session:
         session.add(country)
         session.commit()
         assert country.id is not None
 
 
-@given(name=naming_strategy, end_date=st.dates())
-def test_invalid_existing_country(db_session_factory: SessionFactory, name: str, end_date: date) -> None:
+@pytest.mark.parametrize("country", INVALID_EXISTING_COUNTRIES)
+def test_invalid_existing_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     An active country cannot have an end date.
     """
-    country = db_models.Country(name=name, still_exists=True, end_date = end_date)
+    
     with db_session_factory() as db_session:
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
@@ -48,12 +68,11 @@ def test_invalid_existing_country(db_session_factory: SessionFactory, name: str,
         assert "chk_country_status" in str(exc.value)
 
 
-@given(name=naming_strategy)
-def test_invalid_former_country(db_session_factory: SessionFactory, name: str) -> None:
+@pytest.mark.parametrize("country", INVALID_FORMER_COUNTRIES)
+def test_invalid_former_country(db_session_factory: SessionFactory, country: db_models.Country) -> None:
     """
     A former country needs to have an end_date.
     """
-    country = db_models.Country(name=name, still_exists=False, end_date = None)
     with db_session_factory() as db_session:   
         db_session.add(country)
         with pytest.raises(IntegrityError) as exc:
