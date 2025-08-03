@@ -44,54 +44,13 @@ def engine(postgres_container: str, apply_migrations) -> sa.Engine:
 @pytest.fixture
 def db_session(engine: sa.Engine) -> Generator[Session, None, None]:
     connection = engine.connect()
-    transaction = connection.begin()  # START TRANSACTION
+    transaction = connection.begin()
     Session = sessionmaker(bind=connection)
     session = Session()
-    
-    yield session  # TEST RUNS HERE
-    
-    # CLEANUP PHASE
+    yield session
     session.close()
-    transaction.rollback()  # ROLLBACK TRANSACTION
+    transaction.rollback()
     connection.close()
-    
-@pytest.fixture
-def db_session_factory(engine: sa.Engine):
-    """Returns a context manager factory for creating isolated sessions."""
-    SessionLocal = sessionmaker(bind=engine)
-    
-    @contextmanager
-    def create_session():
-        session = SessionLocal()
-        try:
-            yield session
-        except:
-            session.expunge_all()
-            session.rollback()
-            raise
-        finally:
-            session.close()
-    
-    return create_session
-
-
-def cleanup_tables(session: Session) -> None:
-    inspector: PGInspector = sa.inspect(session.bind) #type: ignore
-    table_names = inspector.get_table_names()
-    
-    if table_names:
-        tables_str = ", ".join(f'"{name}"' for name in table_names if name != 'alembic_version')
-        # Use testcontainer session for execution
-        session.execute(
-            sa.text(f'TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;')
-        )
-        session.commit()
-
-
-@pytest.fixture(scope="function", autouse=True)
-def cleanup_tables_fixture(db_session_factory: SessionFactory):
-    with db_session_factory() as session:
-        cleanup_tables(session)
 
 
 @st.composite
