@@ -40,6 +40,21 @@ def apply_migrations(postgres_container: str):
 def engine(postgres_container: str, apply_migrations) -> sa.Engine:
     return sa.create_engine(postgres_container)
 
+
+@pytest.fixture
+def db_session(engine: sa.Engine) -> Generator[Session, None, None]:
+    connection = engine.connect()
+    transaction = connection.begin()  # START TRANSACTION
+    Session = sessionmaker(bind=connection)
+    session = Session()
+    
+    yield session  # TEST RUNS HERE
+    
+    # CLEANUP PHASE
+    session.close()
+    transaction.rollback()  # ROLLBACK TRANSACTION
+    connection.close()
+    
 @pytest.fixture
 def db_session_factory(engine: sa.Engine):
     """Returns a context manager factory for creating isolated sessions."""
@@ -53,6 +68,7 @@ def db_session_factory(engine: sa.Engine):
         except:
             session.expunge_all()
             session.rollback()
+            raise
         finally:
             session.close()
     
