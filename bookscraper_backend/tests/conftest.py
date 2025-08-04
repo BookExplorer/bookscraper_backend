@@ -4,7 +4,7 @@ import os
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql.base import PGInspector
 from sqlalchemy.orm import sessionmaker, Session
-from testcontainers.postgres import PostgresContainer
+from testcontainers.postgres import PostgresContainer  # type: ignore
 from alembic.config import Config
 from alembic import command
 from bookscraper_backend.database import db_models
