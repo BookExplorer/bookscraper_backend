@@ -1,4 +1,4 @@
-from typing import Generator, Callable, ContextManager, TypedDict
+from typing import Generator
 import pytest
 import os
 import sqlalchemy as sa
@@ -7,26 +7,69 @@ from sqlalchemy.orm import sessionmaker, Session
 from testcontainers.postgres import PostgresContainer
 from alembic.config import Config
 from alembic import command
-from contextlib import contextmanager
-import string
-from hypothesis import strategies as st
 from bookscraper_backend.database import db_models
+from datetime import date
+
+VALID_EXISTING_COUNTRIES_DATA = [
+    {"name": "United States", "still_exists": True, "end_date": None},
+    {"name": "France", "still_exists": True, "end_date": None},
+    {"name": "Côte d'Ivoire", "still_exists": True, "end_date": None},
+]
+
+INVALID_EXISTING_COUNTRIES_DATA = [
+    {"name": "United States", "still_exists": True, "end_date": date.today()},
+    {"name": "France", "still_exists": True, "end_date": date.today()},
+    {"name": "Côte d'Ivoire", "still_exists": True, "end_date": date.today()},
+]
+
+VALID_FORMER_COUNTRIES_DATA = [
+    {"name": "Soviet Union", "still_exists": False, "end_date": date(1991, 12, 26)},
+    {"name": "Yugoslavia", "still_exists": False, "end_date": date(1992, 4, 27)},
+    {"name": "East Germany", "still_exists": False, "end_date": date(1990, 10, 3)},
+]
+
+INVALID_FORMER_COUNTRIES_DATA = [
+    {"name": "Soviet Union", "still_exists": False, "end_date": None},
+    {"name": "Yugoslavia", "still_exists": False, "end_date": None},
+    {"name": "East Germany", "still_exists": False, "end_date": None},
+]
 
 
-type SessionFactory = Callable[[], ContextManager[Session]]
-naming_strategy = st.text(alphabet=string.ascii_letters + " -", min_size=1)
+@pytest.fixture(params=VALID_EXISTING_COUNTRIES_DATA)
+def valid_existing_country(request: pytest.FixtureRequest) -> db_models.Country:
+    return db_models.Country(**request.param)
 
+
+@pytest.fixture(params=VALID_FORMER_COUNTRIES_DATA)
+def valid_former_country(request: pytest.FixtureRequest) -> db_models.Country:
+    return db_models.Country(**request.param)
+
+
+@pytest.fixture(params=INVALID_EXISTING_COUNTRIES_DATA)
+def invalid_existing_country(request: pytest.FixtureRequest) -> db_models.Country:
+    return db_models.Country(**request.param)
+
+
+@pytest.fixture(params=INVALID_FORMER_COUNTRIES_DATA)
+def invalid_former_country(request: pytest.FixtureRequest) -> db_models.Country:
+    return db_models.Country(**request.param)
+
+
+@pytest.fixture(params=VALID_FORMER_COUNTRIES_DATA + VALID_EXISTING_COUNTRIES_DATA)
+def valid_country(request: pytest.FixtureRequest):
+    return db_models.Country(**request.param)
 
 
 @pytest.fixture(scope="module", autouse=True)
-def postgres_container(request) -> Generator[str, None, None]:
+def postgres_container(request: pytest.FixtureRequest) -> Generator[str, None, None]:
     with PostgresContainer(
         username=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        dbname=os.getenv("DB_NAME")
+        dbname=os.getenv("DB_NAME"),
     ) as postgres:
         postgres.start()
         yield postgres.get_connection_url()
+
 
 @pytest.fixture(scope="module")
 def apply_migrations(postgres_container: str):
@@ -43,82 +86,52 @@ def engine(postgres_container: str, apply_migrations) -> sa.Engine:
 
 @pytest.fixture
 def db_session(engine: sa.Engine) -> Generator[Session, None, None]:
-    connection = engine.connect()
-    transaction = connection.begin()
-    Session = sessionmaker(bind=connection)
+    Session = sessionmaker(bind=engine)
     session = Session()
     yield session
     session.close()
-    transaction.rollback() #fixme: This aims to revert commits, but maybe we just clean up DB in a fixture.
-    connection.close()
+    cleanup_Session = sessionmaker(bind=engine)
+    cleanup_sess = cleanup_Session()
+    cleanup_tables(cleanup_sess)
+    cleanup_sess.close()
 
 
-@st.composite
-def random_world(draw) -> list[db_models.Author]:
-    "Strategy that creates a bunch of countries, regions, authors and cities to model a populated db."
-    num_countries = draw(st.integers(min_value=10, max_value=20))
-    num_authors = draw(st.integers(min_value=14, max_value=30))
-    countries_names = draw(st.lists(naming_strategy, unique=True, min_size=num_countries, max_size=num_countries))
-    authors_names = draw(st.lists(naming_strategy, unique=True, min_size=num_authors, max_size=num_authors))
-    authors_ids = draw(st.lists(st.integers(min_value=30), unique=True, min_size=num_authors, max_size=num_authors))
-    cities = []
-    authors = []
-    countries = []
-    all_regions = []
-    for country_name in countries_names:
-        still_exists = draw(st.booleans())
-        has_regions = draw(st.booleans())
-        end_date = draw(st.dates()) if not still_exists else None
-        country = db_models.Country(name=country_name, end_date=end_date, still_exists=still_exists)
-        countries.append(country)
-        if has_regions:
-            num_regions = draw(st.integers(min_value=2, max_value=5))
-            region_names = draw(st.lists(naming_strategy, unique=True, min_size=num_regions, max_size=num_regions))
-            regions = [db_models.Region(name = region_name, country=country) for region_name in region_names]
-            all_regions.extend(regions)
-            for region in regions:
-                num_cities = draw(st.integers(min_value=2, max_value=4))
-                city_names = draw(st.lists(naming_strategy, unique=True, min_size=num_cities, max_size=num_cities))
-                region_cities = [db_models.City(name=city_name, region=region) for city_name in city_names]
-                cities.extend(region_cities)
-        else:
-            num_cities = draw(st.integers(min_value=1, max_value=4))
-            city_names = draw(st.lists(naming_strategy, unique=True, min_size=num_cities, max_size=num_cities))
-            country_cities =[db_models.City(name=city_name, country=country) for city_name in city_names] 
-            cities.extend(country_cities)
-    for author_name, author_id in zip(authors_names, authors_ids):
-        author_city = draw(st.sampled_from(cities))
-        goodreads_link = f"https://www.goodreads.com/author/show/{author_id}"
-        authors.append(db_models.Author(name=author_name, goodreads_link=goodreads_link, birth_city=author_city, goodreads_id=author_id))
-    return authors
+def cleanup_tables(session: Session) -> None:
+    inspector: PGInspector = sa.inspect(session.bind)  # type: ignore
+    table_names = inspector.get_table_names()
+
+    if table_names:
+        tables_str = ", ".join(
+            f'"{name}"' for name in table_names if name != "alembic_version"
+        )
+        # Use testcontainer session for execution
+        session.execute(
+            sa.text(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;")
+        )
+        session.commit()
+
 
 @pytest.fixture
-def sample_data(db_session_factory: SessionFactory) -> None:
+def sample_data(db_session: Session) -> None:
     """Fixture to set up sample data for testing."""
-    country = db_models.Country(
-            name="Testland", 
-            still_exists=True
-        )
-    city = db_models.City(
-            name="Testville", 
-            country=country
-        )
+    country = db_models.Country(name="Testland", still_exists=True)
+    city = db_models.City(name="Testville", country=country)
     authors = [
-            db_models.Author(
-                name="Author One",
-                goodreads_link="https://www.goodreads.com/author/show/1",
-                birth_city=city,
-                goodreads_id=1
-            ),
-            db_models.Author(
-                name="Author Two",
-                goodreads_link="https://www.goodreads.com/author/show/2",
-                birth_city=city,
-                goodreads_id=2
-            )
-        ]
-    with db_session_factory() as session:
-        session.add(country)
-        session.add(city)
-        session.add_all(authors)
-        session.commit()
+        db_models.Author(
+            name="Author One",
+            goodreads_link="https://www.goodreads.com/author/show/1",
+            birth_city=city,
+            goodreads_id=1,
+        ),
+        db_models.Author(
+            name="Author Two",
+            goodreads_link="https://www.goodreads.com/author/show/2",
+            birth_city=city,
+            goodreads_id=2,
+        ),
+    ]
+
+    db_session.add(country)
+    db_session.add(city)
+    db_session.add_all(authors)
+    db_session.commit()
