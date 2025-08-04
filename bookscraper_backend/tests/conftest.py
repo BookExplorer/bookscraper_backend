@@ -104,7 +104,6 @@ def cleanup_tables(session: Session) -> None:
         tables_str = ", ".join(
             f'"{name}"' for name in table_names if name != "alembic_version"
         )
-        # Use testcontainer session for execution
         session.execute(
             sa.text(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE;")
         )

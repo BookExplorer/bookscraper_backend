@@ -4,8 +4,6 @@ from collections import Counter
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
-# TODO: Remove this. Hypothesis is simply too cumbersome for use in this project.
-
 
 def test_fetch_all_authors(db_session: Session, sample_data: None) -> None:
     db_session.commit()
