@@ -49,7 +49,7 @@ def db_session(engine: sa.Engine) -> Generator[Session, None, None]:
     session = Session()
     yield session
     session.close()
-    transaction.rollback()
+    transaction.rollback() #fixme: This aims to revert commits, but maybe we just clean up DB in a fixture.
     connection.close()
 
 
