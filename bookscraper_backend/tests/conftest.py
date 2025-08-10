@@ -80,17 +80,25 @@ def apply_migrations(postgres_container: str):
 
 
 @pytest.fixture(scope="module")
-def engine(postgres_container: str, apply_migrations) -> sa.Engine:
+def test_engine(postgres_container: str, apply_migrations) -> sa.Engine:
     return sa.create_engine(postgres_container)
 
 
 @pytest.fixture
-def db_session(engine: sa.Engine) -> Generator[Session, None, None]:
-    Session = sessionmaker(bind=engine)
+def test_db_session(test_engine: sa.Engine) -> Generator[Session, None, None]:
+    """Handles db sessions for test execution. Will also cleanup after itself using another fixture.
+
+    Args:
+        engine (sa.Engine): Engine returned by fixture, using the testcontainers and with migrations already applied.
+
+    Yields:
+        Generator[Session, None, None]
+    """
+    Session = sessionmaker(bind=test_engine)
     session = Session()
     yield session
     session.close()
-    cleanup_Session = sessionmaker(bind=engine)
+    cleanup_Session = sessionmaker(bind=test_engine)
     cleanup_sess = cleanup_Session()
     cleanup_tables(cleanup_sess)
     cleanup_sess.close()
@@ -111,7 +119,7 @@ def cleanup_tables(session: Session) -> None:
 
 
 @pytest.fixture
-def sample_data(db_session: Session) -> None:
+def sample_data(test_db_session: Session) -> None:
     """Fixture to set up sample data for testing."""
     country = db_models.Country(name="Testland", still_exists=True)
     city = db_models.City(name="Testville", country=country)
@@ -130,7 +138,7 @@ def sample_data(db_session: Session) -> None:
         ),
     ]
 
-    db_session.add(country)
-    db_session.add(city)
-    db_session.add_all(authors)
-    db_session.commit()
+    test_db_session.add(country)
+    test_db_session.add(city)
+    test_db_session.add_all(authors)
+    test_db_session.commit()

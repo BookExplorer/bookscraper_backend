@@ -5,16 +5,16 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 
-def test_fetch_all_authors(db_session: Session, sample_data: None) -> None:
-    db_session.commit()
-    all_authors = db_logic.fetch_all_authors(db_session)
+def test_fetch_all_authors(test_db_session: Session, sample_data: None) -> None:
+    test_db_session.commit()
+    all_authors = db_logic.fetch_all_authors(test_db_session)
     assert len(all_authors) == 2
 
 
-def test_find_missing_authors(db_session: Session, sample_data: None) -> None:
+def test_find_missing_authors(test_db_session: Session, sample_data: None) -> None:
     # We get a few authors that are not in the db for sure.
 
-    db_authors = db_session.query(db_models.Author).all()
+    db_authors = test_db_session.query(db_models.Author).all()
     scrapped_authors = Counter(
         {
             (
@@ -40,7 +40,7 @@ def test_find_missing_authors(db_session: Session, sample_data: None) -> None:
 
 
 
-def test_insert_geo_dict(db_session: Session) -> None:
+def test_insert_geo_dict(test_db_session: Session) -> None:
     simple_geo_dict: GeoDict = {
         "country": "Brazil",
         "region": "Ceará",
@@ -48,11 +48,11 @@ def test_insert_geo_dict(db_session: Session) -> None:
         "latitude": -5.1455607,
         "longitude": -38.0984936,
     }
-    db_logic.process_geo_dict(db_session, simple_geo_dict)
-    country_results = db_session.execute(sa.select(db_models.Country)).scalars().all()
+    db_logic.process_geo_dict(test_db_session, simple_geo_dict)
+    country_results = test_db_session.execute(sa.select(db_models.Country)).scalars().all()
     assert country_results is not None
     assert len(country_results) == 1
-    region_results = db_session.execute(sa.select(db_models.Region)).scalars().all()
+    region_results = test_db_session.execute(sa.select(db_models.Region)).scalars().all()
     assert region_results is not None
     assert len(region_results) == 1
 

@@ -5,132 +5,132 @@ from sqlalchemy.orm import Session
 
 
 def test_valid_existing_country(
-    db_session: Session, valid_existing_country: db_models.Country
+    test_db_session: Session, valid_existing_country: db_models.Country
 ) -> None:
-    db_session.add(valid_existing_country)
-    db_session.commit()
+    test_db_session.add(valid_existing_country)
+    test_db_session.commit()
     assert valid_existing_country.id is not None
 
 
 def test_valid_former_country(
-    db_session: Session, valid_former_country: db_models.Country
+    test_db_session: Session, valid_former_country: db_models.Country
 ) -> None:
     """
     A valid former country can be safely created.
     """
-    db_session.add(valid_former_country)
-    db_session.commit()
+    test_db_session.add(valid_former_country)
+    test_db_session.commit()
     assert valid_former_country.id is not None
 
 
 def test_invalid_existing_country(
-    db_session: Session, invalid_existing_country: db_models.Country
+    test_db_session: Session, invalid_existing_country: db_models.Country
 ) -> None:
     """
     An active country cannot have an end date.
     """
-    db_session.add(invalid_existing_country)
+    test_db_session.add(invalid_existing_country)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "chk_country_status" in str(exc.value)
 
 
 def test_invalid_former_country(
-    db_session: Session, invalid_former_country: db_models.Country
+    test_db_session: Session, invalid_former_country: db_models.Country
 ) -> None:
     """
     A former country needs to have an end_date.
     """
-    db_session.add(invalid_former_country)
+    test_db_session.add(invalid_former_country)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "chk_country_status" in str(exc.value)
 
 
 def test_unique_active_country_name(
-    db_session: Session, valid_existing_country: db_models.Country
+    test_db_session: Session, valid_existing_country: db_models.Country
 ) -> None:
     """
     There can be no two active countries with the same name and the same end date.
     """
-    db_session.add(valid_existing_country)
-    db_session.commit()
+    test_db_session.add(valid_existing_country)
+    test_db_session.commit()
     assert valid_existing_country.id is not None
     duplicate = db_models.Country(
         name=valid_existing_country.name, still_exists=True, end_date=None
     )
-    db_session.add(duplicate)
+    test_db_session.add(duplicate)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "uq_active_country_name" in str(exc.value)
 
 
 def test_unique_former_country_name(
-    db_session: Session, valid_former_country: db_models.Country
+    test_db_session: Session, valid_former_country: db_models.Country
 ) -> None:
     """
     There can be no two former countries with the same name.
     """
-    db_session.add(valid_former_country)
-    db_session.commit()
+    test_db_session.add(valid_former_country)
+    test_db_session.commit()
     assert valid_former_country.id is not None
     duplicate = db_models.Country(
         name=valid_former_country.name,
         still_exists=False,
         end_date=valid_former_country.end_date,
     )
-    db_session.add(duplicate)
+    test_db_session.add(duplicate)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "uq_inactive_country" in str(exc.value)
 
 
 def test_valid_region_creation(
-    db_session: Session, valid_country: db_models.Country
+    test_db_session: Session, valid_country: db_models.Country
 ) -> None:
     """
     A valid region can be safely created.
     """
     region = db_models.Region(name=valid_country.name, country=valid_country)
-    db_session.add(region)
-    db_session.commit()
+    test_db_session.add(region)
+    test_db_session.commit()
     assert region.id is not None
     assert region.country.id == valid_country.id
 
 
 def test_region_unique_constraint(
-    db_session: Session, valid_country: db_models.Country
+    test_db_session: Session, valid_country: db_models.Country
 ) -> None:
     """
     Regions inside of a country should be unique by name.
     """
     region_1 = db_models.Region(name=valid_country.name, country=valid_country)
-    db_session.add(region_1)
-    db_session.commit()
+    test_db_session.add(region_1)
+    test_db_session.commit()
     assert region_1.id is not None
     assert region_1.country.id == valid_country.id
     region_2 = db_models.Region(name=valid_country.name, country=valid_country)
-    db_session.add(region_2)
+    test_db_session.add(region_2)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "regions_country_id_name_key" in str(exc.value)
 
 
 def test_city_check_constraint_nothing(
-    db_session: Session, valid_country: db_models.Country
+    test_db_session: Session, valid_country: db_models.Country
 ) -> None:
     """
     A city must be connected to either a region or a country, it cannot be an orphan.
     """
     city_without_anything = db_models.City(name=valid_country.name)
-    db_session.add(city_without_anything)
+    test_db_session.add(city_without_anything)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "cities_check" in str(exc.value)
 
 
 def test_city_check_constraint_both(
-    db_session: Session, valid_country: db_models.Country
+    test_db_session: Session, valid_country: db_models.Country
 ) -> None:
     """
     A city cannot be directly inside of a country and a region. It's one or the other.
@@ -140,14 +140,14 @@ def test_city_check_constraint_both(
     city_with_both = db_models.City(
         name=valid_country.name, country=valid_country, region=region
     )
-    db_session.add(city_with_both)
+    test_db_session.add(city_with_both)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "cities_check" in str(exc.value)
 
 
 def test_city_uq_city_region(
-    db_session: Session, valid_country: db_models.Country
+    test_db_session: Session, valid_country: db_models.Country
 ) -> None:
     """Test uniqueness constraint of city.name directly inside of region.
 
@@ -155,39 +155,39 @@ def test_city_uq_city_region(
     then there should be no other city in that region with the same name.
     """
     region = db_models.Region(name=valid_country.name, country=valid_country)
-    db_session.add(region)
-    db_session.commit()
+    test_db_session.add(region)
+    test_db_session.commit()
     city_1 = db_models.City(name=valid_country.name, region=region)
     city_2 = db_models.City(name=valid_country.name, region=region)
-    db_session.add(city_1)
-    db_session.commit()
-    db_session.add(city_2)
+    test_db_session.add(city_1)
+    test_db_session.commit()
+    test_db_session.add(city_2)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "uq_city_region" in str(exc.value)
 
 
 def test_city_uq_city_country(
-    db_session: Session, valid_country: db_models.Country
+    test_db_session: Session, valid_country: db_models.Country
 ) -> None:
     """Test uniqueness constraint of city.name directly inside of country.
 
     If a city is not inside of a region but is directly inside of a country,
     then there should be no other city in that country with the same name.
     """
-    db_session.add(valid_country)
-    db_session.commit()
+    test_db_session.add(valid_country)
+    test_db_session.commit()
     city_1 = db_models.City(name=valid_country.name, country=valid_country)
     city_2 = db_models.City(name=valid_country.name, country=valid_country)
-    db_session.add(city_1)
-    db_session.commit()
-    db_session.add(city_2)
+    test_db_session.add(city_1)
+    test_db_session.commit()
+    test_db_session.add(city_2)
     with pytest.raises(IntegrityError) as exc:
-        db_session.commit()
+        test_db_session.commit()
     assert "uq_city_country" in str(exc.value)
 
 
-def test_linked_creation(db_session: Session, valid_country: db_models.Country) -> None:
+def test_linked_creation(test_db_session: Session, valid_country: db_models.Country) -> None:
     """This test should verify that commiting just an author linked to other classes creates everything IF EVERYTHING IS CORRECT.
 
     What this means is that an author born in a city X,
@@ -197,11 +197,11 @@ def test_linked_creation(db_session: Session, valid_country: db_models.Country) 
     region = db_models.Region(name=valid_country.name, country=valid_country)
     city = db_models.City(name=valid_country.name, region=region)
     author = db_models.Author(name=valid_country.name, birth_city=city)
-    db_session.add(author)
-    db_session.commit()
+    test_db_session.add(author)
+    test_db_session.commit()
     other_author = db_models.Author(name=f"{valid_country.name}a", birth_city=city)
-    db_session.add(other_author)
-    db_session.commit()
+    test_db_session.add(other_author)
+    test_db_session.commit()
     assert author.id is not None
     assert city.id is not None
     assert region.id is not None
@@ -216,7 +216,7 @@ def test_linked_creation(db_session: Session, valid_country: db_models.Country) 
 
 
 def test_linked_creation_repeats(
-    db_session: Session, valid_country: db_models.Country
+    test_db_session: Session, valid_country: db_models.Country
 ) -> None:
     """This test should verify that commiting just an author linked to other classes creates everything IF EVERYTHING IS CORRECT.
 
@@ -229,8 +229,8 @@ def test_linked_creation_repeats(
     region = db_models.Region(name=valid_country.name, country=valid_country)
     city = db_models.City(name=valid_country.name, region=region)
     author = db_models.Author(name=valid_country.name, birth_city=city)
-    db_session.add(author)
-    db_session.commit()
+    test_db_session.add(author)
+    test_db_session.commit()
     assert author.id is not None
     assert city.id is not None
     assert region.id is not None
@@ -239,8 +239,8 @@ def test_linked_creation_repeats(
     other_author = db_models.Author(
         name=f"{valid_country.name}a", birth_city=duplicate_city
     )
-    db_session.add(other_author)
+    test_db_session.add(other_author)
     with pytest.raises(IntegrityError):
-        db_session.commit()
+        test_db_session.commit()
     assert other_author.id is None
     assert duplicate_city.id is None
