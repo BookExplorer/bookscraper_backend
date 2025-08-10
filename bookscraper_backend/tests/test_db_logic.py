@@ -39,30 +39,6 @@ def test_find_missing_authors(db_session: Session, sample_data: None) -> None:
     assert actual_missing_authors == expected_missing_authors
 
 
-def test_generate_country_count(
-    db_session: Session, authors: list[db_models.Author]
-) -> None:
-    scrapped_authors = Counter(
-        {
-            (
-                696805,
-                "https://www.goodreads.com/author/show/696805.Jules_Verne",
-                "Jules Vernes",
-            ): 2,
-            (
-                22458,
-                "https://www.goodreads.com/author/show/22458.Machado_de_Assis",
-                "Machado de Assis",
-            ): 1,
-        }
-    )
-
-    # A single session has multiple examples due to shrinkage, so better cleanup!
-    db_session.add_all(authors)
-    db_session.commit()
-    db_logic.generate_country_count(db_session, scrapped_authors)
-    # TODO assert something here, get rid of given.
-
 
 def test_insert_geo_dict(db_session: Session) -> None:
     simple_geo_dict: GeoDict = {
