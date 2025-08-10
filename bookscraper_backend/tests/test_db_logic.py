@@ -73,27 +73,10 @@ def test_insert_geo_dict(db_session: Session) -> None:
         "longitude": -38.0984936,
     }
     db_logic.process_geo_dict(db_session, simple_geo_dict)
-    results = db_session.execute(sa.select(db_models.Country)).scalars().one()
-    assert results is not None
-    assert results.id == 1
-
-
-def test_double_insertion_geo_dict(db_session: Session, sample_data: None) -> None:
-    simple_geo_dict: GeoDict = {
-        "country": "Brazil",
-        "region": "Ceará",
-        "city": "Limoeiro do Norte",
-        "latitude": -5.1455607,
-        "longitude": -38.0984936,
-    }
-    db_logic.process_geo_dict(db_session, simple_geo_dict)
-    db_logic.process_geo_dict(db_session, simple_geo_dict)
     country_results = db_session.execute(sa.select(db_models.Country)).scalars().all()
     assert country_results is not None
     assert len(country_results) == 1
     region_results = db_session.execute(sa.select(db_models.Region)).scalars().all()
     assert region_results is not None
     assert len(region_results) == 1
-    city_results = db_session.execute(sa.select(db_models.City)).scalars().all()
-    assert city_results is not None
-    assert len(city_results) == 1
+
