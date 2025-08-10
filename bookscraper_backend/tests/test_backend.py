@@ -76,9 +76,9 @@ def test_get_lat_long_place(place, expected) -> None:
             "Limoeiro do Norte, Ceará, Brazil",
             {"country": "Brazil", "region": "Ceará", "city": "Limoeiro do Norte", "latitude": -5.1455607, "longitude": -38.0984936},
         ),
-        ("Rome, Italy", {"country": "Italy", "city": "Rome", "latitude": 41.8933203, "longitude": 12.4829321}),
+        ("Rome, Italy", {"country": "Italy", "city": "Rome", "latitude": 41.8933203, "longitude": 12.4829321, "region": None}),
         ("", None),
-        ("suhdfusdhfsudh, bumfuck, nedjsai", {"country": "nedjsai", "region": "bumfuck", "city": "suhdfusdhfsudh"})
+        ("suhdfusdhfsudh, bumfuck, nedjsai", {"country": "nedjsai", "region": "bumfuck", "city": "suhdfusdhfsudh", "latitude": None, "longitude": None})
 
     ],
 )
