@@ -34,7 +34,7 @@ def find_missing_authors(db_authors: Sequence[db_models.Author], scrapped_author
     return missing_authors
 
 
-def process_geo_dict(db_session: Session, geo_dict: GeoDict) -> db_models.City:
+def insert_geo_dict(db_session: Session, geo_dict: GeoDict) -> db_models.City:
     # vc precisa da cidade pra ligar ao resto, entao vc precisa inserir y ahi selectionar
     country_name = geo_dict["country"]
     stmt = insert(db_models.Country).values({'name': country_name}).on_conflict_do_nothing()
@@ -42,6 +42,7 @@ def process_geo_dict(db_session: Session, geo_dict: GeoDict) -> db_models.City:
     country = db_session.execute(sa.select(db_models.Country).where(db_models.Country.name == country_name)).scalars().one()
     city_name = geo_dict['city']
     city = db_models.City(name = city_name)
+    region = None   
     if 'region' in geo_dict:
         region_name = geo_dict["region"]
         db_session.execute(insert(db_models.Region).values({'name':region_name, 'country_id': country.id}))
@@ -50,6 +51,8 @@ def process_geo_dict(db_session: Session, geo_dict: GeoDict) -> db_models.City:
        city.region = region
     else:
         city.country = country
+    db_session.add(city)
+    db_session.commit()
     return city
     
 
