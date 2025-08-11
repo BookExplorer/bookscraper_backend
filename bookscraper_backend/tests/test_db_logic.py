@@ -31,11 +31,12 @@ def test_find_missing_authors(test_db_session: Session, sample_data: None) -> No
     )
     existing_ids = [1, 2]
     expected_missing_authors = [
-        item for item in scrapped_authors.items() if item[0][0] not in existing_ids
+        db_logic.AuthorDict(goodreads_id=item[0][0],goodreads_link=item[0][1], name=item[0][2]) for item in scrapped_authors.items() if item[0][0] not in existing_ids
     ]
     actual_missing_authors = db_logic.find_missing_authors(
         db_authors=db_authors, scrapped_authors=scrapped_authors
     )
+    print(actual_missing_authors)
     assert actual_missing_authors == expected_missing_authors
 
 
