@@ -73,3 +73,11 @@ def test_insert_geo_dict_without_region(test_db_session: Session) -> None:
     city_results = test_db_session.execute(sa.select(db_models.City)).scalars().all()
     assert len(city_results) == 1
 
+
+def test_insert_missing_author(test_db_session: Session) -> None:
+    author_dict = db_logic.AuthorDict(name="Machado de Assis", goodreads_id=22458, goodreads_link="https://www.goodreads.com/author/show/22458.Machado_de_Assis")
+    db_logic.insert_missing_author(test_db_session,author_dict)
+    authors = test_db_session.execute(sa.select(db_models.Author)).scalars().all()
+    expected_author = db_models.Author(**author_dict)
+    assert len(authors) == 1
+    assert authors[0] == db_models.Author(**author_dict)
