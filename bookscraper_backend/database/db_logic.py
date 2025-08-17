@@ -72,15 +72,15 @@ def generate_country_count(db_session: Session, books_per_author: Counter):
     all_authors = fetch_all_authors(db_session)
     missing_authors = find_missing_authors(all_authors, books_per_author)
     for author in missing_authors:
-        gr_id, gr_link, author_name = author[0]
-        birthplace, _ = scrape_gr_author(gr_link)
-        geo_dict = process_birthplace(birthplace)
-        city = insert_geo_dict(geo_dict)
-        author_object = db_models.Author(birth_city = city, name = author_name, goodreads_link=gr_link,goodreads_id=gr_id)
-        db_session.add(author_object)
-        db_session.commit()
+        insert_missing_author(db_session, author)
     pass
 
 
-def insert_missing_author() -> None:
-    pass
+def insert_missing_author(db_session: Session, author: AuthorDict) -> None:
+    birthplace, _ = scrape_gr_author(author["goodreads_link"])
+    geo_dict = process_birthplace(birthplace)
+    city = insert_geo_dict(geo_dict)
+    author_object = db_models.Author(**author)
+    author_object.birth_city = city
+    db_session.add(author_object)
+    db_session.commit()
