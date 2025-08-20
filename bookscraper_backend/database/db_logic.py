@@ -48,9 +48,9 @@ def insert_geo_dict(db_session: Session, geo_dict: GeoDict) -> db_models.City:
     country = db_session.execute(sa.select(db_models.Country).where(db_models.Country.name == country_name)).scalars().one()
     city_name = geo_dict['city']
     city = db_models.City(name = city_name)
-    region = None   
-    if 'region' in geo_dict:
-        region_name = geo_dict["region"]
+    region = None
+    region_name = geo_dict["region"]
+    if region_name:
         db_session.execute(insert(db_models.Region).values({'name':region_name, 'country_id': country.id}))
         region = db_session.execute(sa.select(db_models.Region).where(db_models.Region.name == region_name)).scalars().one()
     if region:
@@ -79,8 +79,9 @@ def generate_country_count(db_session: Session, books_per_author: Counter):
 def insert_missing_author(db_session: Session, author: AuthorDict) -> None:
     birthplace, _ = scrape_gr_author(author["goodreads_link"])
     geo_dict = process_birthplace(birthplace)
-    city = insert_geo_dict(geo_dict)
     author_object = db_models.Author(**author)
-    author_object.birth_city = city
+    if geo_dict:
+        city = insert_geo_dict(db_session, geo_dict)
+        author_object.birth_city = city
     db_session.add(author_object)
     db_session.commit()
