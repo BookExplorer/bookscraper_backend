@@ -2,11 +2,11 @@
 from collections import Counter
 from bookscraper_backend.database import db_models
 import sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
 import os
 from typing import Sequence,TypedDict
-from goodreads_scraper.scrape import process_goodreads_url, scrape_gr_author
+from goodreads_scraper.scrape import scrape_gr_author
 from bookscraper_backend.backend import process_birthplace, GeoDict
 
 # First, setup basic connections for session making and the like.
